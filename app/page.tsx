@@ -27,7 +27,7 @@ export default function Home() {
     formData.append('video', file)
 
     try {
-      const response = await fetch('http://localhost:5173/video', {
+      const response = await fetch('https://api.anky.bot/video', {
         method: 'POST',
         body: formData,
       })
