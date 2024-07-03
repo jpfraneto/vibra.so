@@ -23,7 +23,7 @@ export default function Home() {
     formData.append('video', file)
 
     try {
-      const response = await axios.post('/api/video', formData, {
+      const response = await axios.post('https://api.anky.bot/video', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
