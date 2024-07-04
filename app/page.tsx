@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB in bytes
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState<string>('')
+  const [progress, setProgress] = useState<string[]>([])
   const [uploadResult, setUploadResult] = useState<any>(null)
-  const [castHash, setCastHash] = useState<any>(null)
+  const [castHash, setCastHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,8 +31,9 @@ export default function Home() {
     if (!file) return
 
     setUploading(true)
-    setProgress('')
+    setProgress([])
     setUploadResult(null)
+    setCastHash(null)
 
     const formData = new FormData()
     formData.append('video', file)
@@ -47,14 +48,31 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      console.log("Upload result:", result);
-      setUploadResult(result.videoRecord);
-      setCastHash(result.castHash)
-      setProgress('Upload complete!');
+      const reader = response.body!.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const decodedChunk = decoder.decode(value, { stream: true })
+        const lines = decodedChunk.split('\n').filter(line => line.trim() !== '')
+        lines.forEach(line => {
+          try {
+            const parsed = JSON.parse(line)
+            if (parsed.type === 'progress') {
+              setProgress(prev => [...prev, parsed.message])
+            } else if (parsed.type === 'result') {
+              setUploadResult(parsed.videoRecord)
+              setCastHash(parsed.castHash)
+            }
+          } catch (e) {
+            console.error('Error parsing server message:', e)
+          }
+        })
+      }
     } catch (error) {
       console.error('Error uploading video:', error)
-      setProgress('Failed to upload video')
+      setProgress(prev => [...prev, 'Failed to upload video'])
     } finally {
       setUploading(false)
     }
@@ -86,22 +104,28 @@ export default function Home() {
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
-        {progress && (
+        {progress.length > 0 && (
           <div className="mt-4">
             <h2 className="text-xl font-bold">Progress:</h2>
-            <p>{progress}</p>
+            <ul className="list-disc pl-5">
+              {progress.map((msg, index) => (
+                <li key={index} className="mt-1">{msg}</li>
+              ))}
+            </ul>
           </div>
         )}
         {uploadResult && (
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">Upload Result:</h2>
             <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(uploadResult, null, 2)}</pre>
-            <div className="mt-4">
-              <h3 className="text-xl font-bold mb-2">IPFS Link:</h3>
-              <a href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                View on warpcast
-              </a>
-            </div>
+            {castHash && (
+              <div className="mt-4">
+                <h3 className="text-xl font-bold mb-2">Warpcast Link:</h3>
+                <a href={`https://www.warpcast.com/!/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                  View on Warpcast
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>
