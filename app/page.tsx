@@ -73,13 +73,14 @@ export default function Home() {
     } catch (error) {
       console.error('Error uploading video:', error)
       setProgress(prev => [...prev, 'Failed to upload video'])
+      setError('Failed to upload video')
     } finally {
       setUploading(false)
     }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between py-24 px-4">
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
         <h1 className="text-4xl font-bold mb-8">Video Upload (MAX 50 MB. DONT BREAK IT PLZ)</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,11 +117,11 @@ export default function Home() {
         )}
         {uploadResult && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">cast shared:</h2>
             {castHash && (
-              <div className="mt-4 p-2 bg-purple-200 ">
-                <a href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-white">
-                  open on Warpcast
+              <div className="mt-4">
+                <h3 className="text-xl font-bold mb-2 text-white p-2 rounded-xl bg-purple-500">warpcast Link:</h3>
+                <a href={`https://www.warpcast.com/~/channel/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="">
+                  View on Warpcast
                 </a>
               </div>
             )}
