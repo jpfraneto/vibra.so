@@ -5,23 +5,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB in bytes
 
-const story = `In the heart of the digital realm, a new avenue of expression emerges - Zurf, a Farcaster client that's about to change everything. As your video begins its journey through the blockchain, let me take you on a ride through the future of social interaction.
+const story = `En el corazón del reino digital, surge una nueva avenida de expresión: Zurf, un cliente de Farcaster que está a punto de cambiarlo todo. Mientras tu video comienza su viaje a través de la blockchain, permíteme llevarte en un recorrido por el futuro de la interacción social.
 
-Imagine a world where every voice matters, where ideas flow freely across borders and barriers. That's the promise of Web3, and Zurf is here to make it a reality. Your video isn't just data; it's a piece of you, a moment in time, captured and shared with the world.
+Imagina un mundo donde cada voz importa, donde las ideas fluyen libremente a través de fronteras y barreras. Esa es la promesa de Web3, y Zurf está aquí para hacerla realidad. Tu video no es solo datos; es una parte de ti, un momento en el tiempo, capturado y compartido con el mundo.
 
-As we speak, your creation is being woven into the fabric of the blockchain. Each byte is a thread in this tapestry of human expression. Can you feel the excitement? This is more than just an upload - it's a revolution in how we connect, how we share, how we grow.
+Mientras hablamos, tu creación se está entretejiendo en el tejido de la blockchain. Cada byte es un hilo en este tapiz de expresión humana. ¿Puedes sentir la emoción? Esto es más que una simple carga; es una revolución en la forma en que nos conectamos, compartimos y crecemos.
 
-In this new world, your content isn't owned by faceless corporations. It's yours, truly and forever. The blockchain ensures that your voice can never be silenced, your creativity never stifled. With each passing second, your video moves closer to becoming a permanent part of this decentralized network.
+En este nuevo mundo, tu contenido no es propiedad de corporaciones sin rostro. Es tuyo, verdadera y eternamente. La blockchain asegura que tu voz nunca pueda ser silenciada, tu creatividad nunca sofocada. Con cada segundo que pasa, tu video se acerca más a convertirse en una parte permanente de esta red descentralizada.
 
-But Zurf is more than just a platform - it's a community. As your video uploads, imagine the countless others who will see it, be moved by it, respond to it. In this ecosystem of ideas, every interaction sparks new thoughts, new creations. It's a beautiful cycle of inspiration and innovation.
+Pero Zurf es más que solo una plataforma; es una comunidad. Mientras tu video se carga, imagina a los innumerables otros que lo verán, se conmoverán con él, responderán a él. En este ecosistema de ideas, cada interacción genera nuevos pensamientos, nuevas creaciones. Es un hermoso ciclo de inspiración e innovación.
 
-The power of blockchain technology goes beyond just securing your content. It's about creating a fairer, more transparent world. A world where artists are fairly compensated, where ideas are traced to their source, where trust is built into the very system we use to communicate.
+El poder de la tecnología blockchain va más allá de simplemente asegurar tu contenido. Se trata de crear un mundo más justo y transparente. Un mundo donde los artistas son justamente compensados, donde las ideas se rastrean hasta su origen, donde la confianza está integrada en el mismo sistema que usamos para comunicarnos.
 
-As we near the end of this upload journey, take a moment to appreciate the magnitude of what's happening. Your video, your moment, is about to become a part of something bigger than all of us. It's a step towards a future where technology empowers rather than exploits, where communities thrive on authenticity and shared experiences.
+A medida que nos acercamos al final de este viaje de carga, tómate un momento para apreciar la magnitud de lo que está sucediendo. Tu video, tu momento, está a punto de convertirse en parte de algo más grande que todos nosotros. Es un paso hacia un futuro donde la tecnología empodera en lugar de explotar, donde las comunidades prosperan en la autenticidad y las experiencias compartidas.
 
-This is the beauty of the human experience in the digital age - the ability to touch lives across the globe with the click of a button. Your voice, amplified by the blockchain, has the power to inspire, to teach, to change the world.
+Esta es la belleza de la experiencia humana en la era digital: la capacidad de tocar vidas en todo el globo con el clic de un botón. Tu voz, amplificada por la blockchain, tiene el poder de inspirar, de enseñar, de cambiar el mundo.
 
-And now, as your video finds its home in this new digital frontier, remember: this is just the beginning. Welcome to Zurf, welcome to the future of social interaction. Your journey in this new world starts now.`;
+Y ahora, mientras tu video encuentra su hogar en esta nueva frontera digital, recuerda: esto es solo el comienzo. Bienvenido a Zurf, bienvenido al futuro de la interacción social. Tu viaje en este nuevo mundo comienza ahora.`;
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
@@ -32,17 +32,17 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [storyIndex, setStoryIndex] = useState(0)
   const [showUploadInterface, setShowUploadInterface] = useState(true)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       if (selectedFile.size > MAX_FILE_SIZE) {
-        setError("File is too large. Maximum size is 50 MB.");
+        setError("El archivo es demasiado grande. El tamaño máximo es de 50 MB.");
         setFile(null);
       } else {
         setFile(selectedFile);
         setError(null);
-        console.log("Selected file:", selectedFile);
       }
     }
   };
@@ -56,6 +56,18 @@ export default function Home() {
     setUploadResult(null)
     setCastHash(null)
     setShowUploadInterface(false)
+    setUploadProgress(0)
+
+    // Simulate upload progress
+    const intervalId = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(intervalId)
+          return 100
+        }
+        return prev + (100 / 60)
+      })
+    }, 1000)
 
     const formData = new FormData()
     formData.append('video', file)
@@ -98,13 +110,14 @@ export default function Home() {
       setError('Failed to upload video')
     } finally {
       setUploading(false)
+      clearInterval(intervalId)
     }
   }
 
   const streamStory = useCallback(() => {
     if (storyIndex < story.length && uploading) {
       setStoryIndex(prevIndex => prevIndex + 1);
-      setTimeout(streamStory, 50); // Adjust speed here
+      setTimeout(streamStory, 33); // Adjust speed here
     }
   }, [storyIndex, uploading]);
 
@@ -123,7 +136,7 @@ export default function Home() {
             exit={{ opacity: 0 }}
             className="z-10 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl items-center justify-between font-mono text-sm bg-white p-6 rounded-xl shadow-2xl"
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center">Video Upload (MAX 50 MB)</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center">Subir Video (MAX 50 MB)</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input 
                 type="file" 
@@ -143,7 +156,7 @@ export default function Home() {
                 disabled={!file || uploading || !!error} 
                 className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 transition-colors duration-300"
               >
-                {uploading ? 'Uploading...' : 'Upload'}
+                {uploading ? 'Subiendo...' : 'Subir'}
               </button>
             </form>
           </motion.div>
@@ -151,25 +164,31 @@ export default function Home() {
       </AnimatePresence>
 
       {uploading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="text-lg sm:text-xl md:text-2xl font-bold text-white text-center max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
-        >
-          {story.slice(0, storyIndex)}
-        </motion.div>
-      )}
-
-      {progress.length > 0 && (
-        <div className="mt-4 text-white">
-          <h2 className="text-lg sm:text-xl font-bold">Progress:</h2>
-          <ul className="list-disc pl-5">
-            {progress.map((msg, index) => (
-              <li key={index} className="mt-1 text-sm sm:text-base">{msg}</li>
-            ))}
-          </ul>
-        </div>
+        <>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mb-8"
+          >
+            <h2 className="text-white text-center mb-2">Subiendo tu video al éter</h2>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <motion.div 
+                className="bg-blue-600 h-2.5 rounded-full"
+                initial={{ width: '0%' }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-lg sm:text-xl md:text-2xl font-bold text-white text-center max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
+          >
+            {story.slice(0, storyIndex)}
+          </motion.div>
+        </>
       )}
 
       {uploadResult && castHash && (
@@ -185,7 +204,7 @@ export default function Home() {
             rel="noopener noreferrer" 
             className="text-white text-lg sm:text-xl md:text-2xl font-bold p-3 sm:p-4 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-1"
           >
-            view on Warpcast
+            Ver en Warpcast
           </a>
         </motion.div>
       )}
