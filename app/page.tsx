@@ -128,7 +128,7 @@ export default function Home() {
   }, [uploading, streamStory]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 md:p-24 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-1000">
+    <main className="flex min-h-screen flex-col items-center justify-left p-2 sm:p-6 md:p-24 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-1000">
       <AnimatePresence>
         {showUploadInterface && (
           <motion.div
@@ -156,7 +156,7 @@ export default function Home() {
                 disabled={!file || uploading || !!error} 
                 className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 transition-colors duration-300"
               >
-                {uploading ? 'Subiendo...' : 'Subir'}
+                {uploading ? 'subiendo...' : 'subir video'}
               </button>
             </form>
           </motion.div>
@@ -170,7 +170,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mb-8"
           >
-            <h2 className="text-white text-center mb-2">Subiendo tu video al éter</h2>
+            <h2 className="text-white text-center mb-2">subiendo tu video al éter</h2>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
               <motion.div 
                 className="bg-blue-600 h-2.5 rounded-full"
