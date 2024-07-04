@@ -79,7 +79,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between py-24 px-4">
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
         <h1 className="text-4xl font-bold mb-8">Video Upload (MAX 50 MB. DONT BREAK IT PLZ)</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
