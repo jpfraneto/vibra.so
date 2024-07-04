@@ -116,13 +116,11 @@ export default function Home() {
         )}
         {uploadResult && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Upload Result:</h2>
-            <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(uploadResult, null, 2)}</pre>
+            <h2 className="text-2xl font-bold mb-4">cast shared:</h2>
             {castHash && (
-              <div className="mt-4">
-                <h3 className="text-xl font-bold mb-2">Warpcast Link:</h3>
-                <a href={`https://www.warpcast.com/!/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                  View on Warpcast
+              <div className="mt-4 p-2 bg-purple-200 ">
+                <a href={`https://www.warpcast.com/!/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-white">
+                  open on Warpcast
                 </a>
               </div>
             )}
