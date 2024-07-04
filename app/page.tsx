@@ -119,9 +119,8 @@ export default function Home() {
           <div className="mt-8">
             {castHash && (
               <div className="mt-4">
-                <h3 className="text-xl font-bold mb-2 text-white p-2 rounded-xl bg-purple-500">warpcast Link:</h3>
-                <a href={`https://www.warpcast.com/~/channel/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="">
-                  View on Warpcast
+                <a href={`https://www.warpcast.com/~/channel/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-xl bg-purple-500">
+                  view on warpcast
                 </a>
               </div>
             )}
