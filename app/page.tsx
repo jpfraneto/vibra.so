@@ -7,6 +7,7 @@ export default function Home() {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<string>('')
   const [uploadResult, setUploadResult] = useState<any>(null)
+  const [castHash, setCastHash] = useState<any>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -27,7 +28,7 @@ export default function Home() {
     formData.append('video', file)
 
     try {
-      const response = await fetch('https://api.anky.bot/video', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_ROUTE}/video`, {
         method: 'POST',
         body: formData,
       })
@@ -39,6 +40,7 @@ export default function Home() {
       const result = await response.json();
       console.log("Upload result:", result);
       setUploadResult(result.videoRecord);
+      setCastHash(result.castHash)
       setProgress('Upload complete!');
     } catch (error) {
       console.error('Error uploading video:', error)
@@ -75,13 +77,9 @@ export default function Home() {
             <h2 className="text-2xl font-bold mb-4">Upload Result:</h2>
             <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(uploadResult, null, 2)}</pre>
             <div className="mt-4">
-              <h3 className="text-xl font-bold mb-2">Generated GIF:</h3>
-              <img src={`http://localhost:5173${uploadResult.gifPath}`} alt="Generated GIF" className="max-w-full h-auto" />
-            </div>
-            <div className="mt-4">
               <h3 className="text-xl font-bold mb-2">IPFS Link:</h3>
-              <a href={`https://ipfs.io/ipfs/${uploadResult.ipfsHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                View on IPFS
+              <a href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                View on warpcast
               </a>
             </div>
           </div>
