@@ -119,7 +119,7 @@ export default function Home() {
             <h2 className="text-2xl font-bold mb-4">cast shared:</h2>
             {castHash && (
               <div className="mt-4 p-2 bg-purple-200 ">
-                <a href={`https://www.warpcast.com/!/738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-white">
+                <a href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`} target="_blank" rel="noopener noreferrer" className="text-white">
                   open on Warpcast
                 </a>
               </div>
