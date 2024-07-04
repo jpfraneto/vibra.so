@@ -199,7 +199,7 @@ export default function Home() {
           className="mt-8"
         >
           <a 
-            href={`https://www.warpcast.com/~/channel/738435/${castHash.slice(0,10)}`} 
+            href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`} 
             target="_blank" 
             rel="noopener noreferrer" 
             className="text-white text-lg sm:text-xl md:text-2xl font-bold p-3 sm:p-4 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-1"
