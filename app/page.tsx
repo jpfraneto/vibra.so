@@ -2,17 +2,27 @@
 
 import { useState } from 'react'
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB in bytes
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState<string>('')
   const [uploadResult, setUploadResult] = useState<any>(null)
   const [castHash, setCastHash] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-      console.log("Selected file:", e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setError("File is too large. Maximum size is 50 MB.");
+        setFile(null);
+      } else {
+        setFile(selectedFile);
+        setError(null);
+        console.log("Selected file:", selectedFile);
+      }
     }
   };
 
@@ -55,14 +65,24 @@ export default function Home() {
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
         <h1 className="text-4xl font-bold mb-8">Video Upload</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="file" accept="video/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-full file:border-0
-            file:text-sm file:font-semibold
-            file:bg-violet-50 file:text-violet-700
-            hover:file:bg-violet-100
-          "/>
-          <button type="submit" disabled={!file || uploading} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
+          <input 
+            type="file" 
+            accept="video/*" 
+            onChange={handleFileChange} 
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-violet-50 file:text-violet-700
+              hover:file:bg-violet-100
+            "
+          />
+          {error && <p className="text-red-500">{error}</p>}
+          <button 
+            type="submit" 
+            disabled={!file || uploading || !!error} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+          >
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
