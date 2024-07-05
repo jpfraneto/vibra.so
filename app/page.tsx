@@ -10,6 +10,7 @@ import { Lilita_One } from 'next/font/google';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Mic, MicOff, Repeat, SwitchCamera } from 'lucide-react';
+import mime from 'mime-types';
 
 const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 
@@ -146,6 +147,7 @@ export default function Home() {
       }
   
       mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
+  
       
       const chunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
@@ -212,7 +214,7 @@ export default function Home() {
     try {
       // Determine the correct file extension based on the blob's type
       const fileExtension = getFileExtensionFromMimeType(videoBlob.type);
-      formData.append('video', videoBlob, `recorded_video${fileExtension}`);
+      formData.append('video', videoBlob, `recorded_video.${mime.extension(videoBlob.type)}`);
       
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
