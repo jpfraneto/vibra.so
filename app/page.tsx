@@ -188,6 +188,20 @@ export default function Home() {
     }
   };
 
+  function getFileExtensionFromMimeType(mimeType: string): string {
+    switch (mimeType) {
+      case 'video/webm':
+        return '.webm';
+      case 'video/mp4':
+        return '.mp4';
+      case 'video/quicktime':
+        return '.mov';
+      default:
+        console.warn(`Unknown mime type: ${mimeType}, defaulting to .mp4`);
+        return '.mp4';
+    }
+  }
+
   const handleUpload = async (videoBlob: Blob) => {
     setUploading(true);
     setUploadProgress(0);
@@ -196,7 +210,10 @@ export default function Home() {
   
     const formData = new FormData();
     try {
-      formData.append('video', videoBlob, 'recorded_video.webm');
+      // Determine the correct file extension based on the blob's type
+      const fileExtension = getFileExtensionFromMimeType(videoBlob.type);
+      formData.append('video', videoBlob, `recorded_video${fileExtension}`);
+      
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
       }
@@ -210,22 +227,26 @@ export default function Home() {
       });
   
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
   
       const result = await response.json();
   
+      if (result.error) {
+        throw new Error(result.error);
+      }
+  
       if (result.gifLink && typeof result.gifLink === 'string' && result.gifLink.trim() !== '') {
         setGifLink(result.gifLink);
+        setCastHash(result.castHash);
+        setUploadProgress(100);
       } else {
-        console.error("Received invalid gif link:", result.gifLink);
-        setError('Failed to load GIF');
+        throw new Error('Received invalid GIF link');
       }
-      setCastHash(result.castHash);
-      setUploadProgress(100);
     } catch (error) {
       console.error('Error uploading video:', error);
-      setError('Failed to upload video');
+      setError(error.message || 'Failed to upload video');
     } finally {
       setUploading(false);
       setRecordedVideo(null);

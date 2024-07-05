@@ -1,7 +1,7 @@
 // components/BottomNav.tsx
 "use client"
 import React from 'react';
-import { Home, User, Video, Wallet, MessageCircle } from 'lucide-react';
+import { Home, User, Video, Wallet, MessageCircle, StopCircle } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 
 interface BottomNavProps {
@@ -25,6 +25,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isRecording, stopR
       }
 
     } else {
+      return
       alert(`Open ${route} route`);
     }
   };
@@ -75,7 +76,7 @@ const RecordButton: React.FC<RecordButtonProps> = ({ isRecording, onClick }) => 
     } hover:bg-[#FF0000] transition-colors duration-200`}
     onClick={onClick}
   >
-    <Video size={32} className="text-white" />
+    {isRecording ? <StopCircle size={32} className="text-white" /> : <Video size={32} className="text-white" />}
   </button>
 );
 
