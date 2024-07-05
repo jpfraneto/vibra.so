@@ -145,10 +145,17 @@ export default function Home() {
 
     const formData = new FormData();
     try {
+      let blobToUpload: Blob;
       if (!videoBlob) {
-        videoBlob = await fetch(recordedVideo!).then(r => r.blob());
+        if (!recordedVideo) {
+          throw new Error('No video to upload');
+        }
+        blobToUpload = await fetch(recordedVideo).then(r => r.blob());
+      } else {
+        blobToUpload = videoBlob;
       }
-      formData.append('video', videoBlob, 'recorded_video.mp4');
+      formData.append('video', blobToUpload, 'recorded_video.mp4');
+
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
       }
