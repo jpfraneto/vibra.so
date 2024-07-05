@@ -254,7 +254,7 @@ export default function Home() {
                     className="mt-2 w-full flex items-center justify-center bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300"
                   >
                     <Repeat className="mr-2" size={18} />
-                    Record Another
+                    new video
                   </button>
                 </div>
               ) : (
