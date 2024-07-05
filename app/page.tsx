@@ -342,7 +342,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <>
-                    <div className="relative w-full aspect-video bg-black">
+                    <div className={`relative w-full ${isMobile ? "h-full" : "aspect-video" } bg-black`}>
                       <video 
                         ref={videoRef} 
                         className="w-full h-full object-cover" 
