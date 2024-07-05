@@ -22,6 +22,7 @@ export default function Home() {
   const [castHash, setCastHash] = useState<string | null>(null);
   const [gifLink, setGifLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasMediaAccess, setHasMediaAccess] = useState(false);
   const { authenticated, user, logout } = usePrivy();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -34,6 +35,25 @@ export default function Home() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    // Check for media access when the component mounts
+    checkMediaAccess();
+  }, []);
+
+  const checkMediaAccess = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setHasMediaAccess(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      stream.getTracks().forEach(track => track.stop()); // Stop the stream after checking
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+      setHasMediaAccess(false);
+    }
+  };
 
   const titleVariants = {
     hidden: { opacity: 0, y: -50 },
@@ -74,6 +94,7 @@ export default function Home() {
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
         setRecordedVideo(URL.createObjectURL(blob));
+        handleUpload(blob); // Automatically upload when recording stops
       };
 
       mediaRecorderRef.current.start();
@@ -96,6 +117,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error accessing camera:', error);
       setError('Failed to access camera');
+      setHasMediaAccess(false);
     }
   };
 
@@ -113,8 +135,8 @@ export default function Home() {
     }
   };
 
-  const handleUpload = async () => {
-    if (!recordedVideo) return;
+  const handleUpload = async (videoBlob?: Blob) => {
+    if (!videoBlob && !recordedVideo) return;
 
     setUploading(true);
     setUploadProgress(0);
@@ -123,7 +145,9 @@ export default function Home() {
 
     const formData = new FormData();
     try {
-      const videoBlob = await fetch(recordedVideo).then(r => r.blob());
+      if (!videoBlob) {
+        videoBlob = await fetch(recordedVideo!).then(r => r.blob());
+      }
       formData.append('video', videoBlob, 'recorded_video.mp4');
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
@@ -185,7 +209,8 @@ export default function Home() {
           animate="visible"
         >
           guarpcast
-        </motion.h1>        {authenticated && <button className='bg-purple-600 rounded-xl p-2 text-white mb-2 hover:bg-purple-400' onClick={logout}>logout</button>}
+        </motion.h1>
+        {authenticated && <button className='bg-purple-600 rounded-xl p-2 text-white mb-2 hover:bg-purple-400' onClick={logout}>logout</button>}
         
         {authenticated ? (
           <>
@@ -198,13 +223,12 @@ export default function Home() {
               )}
             </div>
             
-            {recordedVideo && !isRecording && !gifLink && (
+            {!hasMediaAccess && (
               <button
-                onClick={handleUpload}
-                disabled={uploading}
+                onClick={checkMediaAccess}
                 className="w-full mt-2 bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
               >
-                {uploading ? 'UPLOADING' : 'UPLOAD'}
+                Allow Camera Access
               </button>
             )}
             
