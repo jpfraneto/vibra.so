@@ -21,7 +21,7 @@ export default function Home() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [castHash, setCastHash] = useState<string | null>(null);
-  const [gifLink, setGifLink] = useState<string | null>(null);
+  const [gifLink, setGifLink] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [hasMediaAccess, setHasMediaAccess] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
