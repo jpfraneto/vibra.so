@@ -195,7 +195,7 @@ export default function Home() {
   };
 
   const resetRecording = () => {
-    setGifLink(null);
+    setGifLink("");
     setCastHash(null);
     setError(null);
     checkMediaAccess();
