@@ -16,7 +16,7 @@ interface VideoPageProps {
 
 export default function VideoPage({ params }: VideoPageProps) {
   const { uuid } = params;
-  const videoUrl = `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720177955/videos/uploaded_videos/${uuid}.mov`;
+  const videoUrl = `https://res.cloudinary.com/dzpugkpuz/video/upload/v1720203712/zurf/uploaded_videos/${uuid}.mkv`;
   
   const [isRecording, setIsRecording] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(100);
@@ -147,26 +147,25 @@ export default function VideoPage({ params }: VideoPageProps) {
 
   return (
     <>
-    <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col flex-grow items-center justify-center flex-grow z-2">
-      <div className='grow w-full'>
-      <video 
-          ref={videoRef}
-          src={isRecording ? undefined : videoUrl} 
-          className="w-full grow object-contain" 
-          controls={!isRecording}
-          autoPlay 
-          loop 
-          muted={isRecording}
-          playsInline
+    <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col flex-grow flex-grow z-2">
+      <div className='grow bg-red-200 flex flex-col justify-center items-center w-full'>
+        <video 
+            ref={videoRef}
+            src={isRecording ? undefined : videoUrl} 
+            className="w-full grow object-contain" 
+            controls={!isRecording}
+            autoPlay 
+            loop 
+            muted={isRecording}
+            playsInline
+          />
+      </div>
+        <BottomNav 
+          onRecordClick={startRecording}
+          isRecording={isRecording}
+          stopRecording={stopRecording}
         />
       </div>
- 
-      </div>
-      <BottomNav 
-        onRecordClick={startRecording}
-        isRecording={isRecording}
-        stopRecording={stopRecording}
-      />
     </>
   );
 }
