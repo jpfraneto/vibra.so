@@ -8,7 +8,7 @@ import Image from 'next/image';
 import ProgressBar from '../components/ProgressBar';
 import { Lilita_One } from 'next/font/google';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Mic, MicOff, Repeat, LogOut } from 'lucide-react';
+import { Camera, Mic, MicOff, Repeat, SwitchCamera } from 'lucide-react';
 
 const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 
@@ -25,6 +25,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [hasMediaAccess, setHasMediaAccess] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
+
   const { authenticated, user, logout, login } = usePrivy();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -41,10 +44,14 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
+
+  useEffect(() => {
     if (authenticated) {
       checkMediaAccess();
     }
-  }, [authenticated]);
+  }, [authenticated, cameraFacingMode]);
 
   const stopMediaTracks = () => {
     if (streamRef.current) {
@@ -54,7 +61,11 @@ export default function Home() {
 
   const checkMediaAccess = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const constraints = { 
+        video: { facingMode: cameraFacingMode },
+        audio: true 
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setHasMediaAccess(true);
       streamRef.current = stream;
       if (videoRef.current) {
@@ -64,6 +75,14 @@ export default function Home() {
       console.error('Error accessing media devices:', error);
       setHasMediaAccess(false);
     }
+  };
+
+  const switchCamera = async () => {
+    setCameraFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    await checkMediaAccess();
   };
 
   const startRecording = async () => {
@@ -273,6 +292,14 @@ export default function Home() {
                       >
                         {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                       </button>
+                      {isMobile && (
+                          <button
+                            onClick={switchCamera}
+                            className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                          >
+                            <SwitchCamera size={20} />
+                          </button>
+                        )}
                     </div>
                   </div>
             
