@@ -5,6 +5,7 @@ import React, { useState, useRef } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import BottomNav from '../../../components/BottomNav';
 import ProgressBar from '../../../components/ProgressBar';
+import Link from 'next/link';
 
 const MAX_RECORDING_TIME = 20; // seconds
 
@@ -159,12 +160,12 @@ export default function VideoPage({ params }: VideoPageProps) {
             muted={isRecording}
             playsInline
           />
-      </div>
-        <BottomNav 
-          onRecordClick={startRecording}
-          isRecording={isRecording}
-          stopRecording={stopRecording}
-        />
+        </div>
+        <div className='h-12 flex justify-center items-center'>
+            <span className='p-2 rounded-xl bg-purple-600 hover:bg-purple-700'>
+              <Link href="/">landing</Link>
+            </span>
+        </div>
       </div>
     </>
   );
