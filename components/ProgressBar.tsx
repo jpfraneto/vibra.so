@@ -11,7 +11,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
       <div 
         className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300 ease-linear"
         style={{ width: `${progress}%` }}
-      ></div>
+      >
+        uploading video, transforming it into a gif, and casting it. plz wait
+      </div>
     </div>
   );
 };
