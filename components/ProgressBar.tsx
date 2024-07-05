@@ -1,6 +1,11 @@
+// components/ProgressBar.tsx
 import React from 'react';
 
-const ProgressBar = ({ progress }) => {
+interface ProgressBarProps {
+  progress: number;
+}
+
+const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   return (
     <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
       <div 

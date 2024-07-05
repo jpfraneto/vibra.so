@@ -1,15 +1,18 @@
 // components/BottomNav.tsx
 import React from 'react';
 import { Home, User, Video, Wallet, MessageCircle } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
 
-const BottomNav = ({ onRecordClick, isRecording, stopRecording }) => {
-  const { login, authenticated } = usePrivy();
+interface BottomNavProps {
+  onRecordClick: () => void;
+  isRecording: boolean;
+  stopRecording: () => void;
+}
 
+const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isRecording, stopRecording }) => {
   const handleNavClick = (route: string) => {
     if (route === 'record') {
-      if (!authenticated) {
-        login();
+      if (isRecording) {
+        stopRecording();
       } else {
         onRecordClick();
       }
@@ -19,14 +22,13 @@ const BottomNav = ({ onRecordClick, isRecording, stopRecording }) => {
   };
 
   return (
-    <nav className="bottom-0 left-0 right-0 bg-black text-white">
+    <nav className="fixed bottom-0 left-0 right-0 bg-black text-white">
       <div className="flex justify-around items-center h-16 max-w-[375px] mx-auto">
         <NavItem icon={<Home size={24} />} label="Home" onClick={() => handleNavClick('home')} />
         <NavItem icon={<User size={24} />} label="Profile" onClick={() => handleNavClick('profile')} />
         <RecordButton 
           isRecording={isRecording} 
           onClick={() => handleNavClick('record')}
-          stopRecording={stopRecording}
         />
         <NavItem icon={<Wallet size={24} />} label="Wallet" onClick={() => handleNavClick('wallet')} />
         <NavItem icon={<MessageCircle size={24} />} label="Messages" onClick={() => handleNavClick('messages')} />
@@ -35,7 +37,13 @@ const BottomNav = ({ onRecordClick, isRecording, stopRecording }) => {
   );
 };
 
-const NavItem = ({ icon, label, onClick }) => (
+interface NavItemProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
   <button 
     className="flex flex-col items-center group"
     onClick={onClick}
@@ -47,12 +55,17 @@ const NavItem = ({ icon, label, onClick }) => (
   </button>
 );
 
-const RecordButton = ({ isRecording, onClick, stopRecording }) => (
+interface RecordButtonProps {
+  isRecording: boolean;
+  onClick: () => void;
+}
+
+const RecordButton: React.FC<RecordButtonProps> = ({ isRecording, onClick }) => (
   <button 
-    className={`flex flex-col items-center justify-center -mt-2 w-24 h-24 rounded-full ${
+    className={`flex flex-col items-center justify-center -mt-6 w-16 h-16 rounded-full ${
       isRecording ? 'bg-red-600' : 'bg-blue-500'
     } hover:bg-[#FF0000] transition-colors duration-200`}
-    onClick={isRecording ? stopRecording : onClick}
+    onClick={onClick}
   >
     <Video size={32} className="text-white" />
     <span className="text-xs text-white mt-1">{isRecording ? 'Stop' : 'Record'}</span>
