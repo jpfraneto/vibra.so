@@ -19,6 +19,7 @@
     "next": "14.2.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
     "string-replace-loader": "^3.1.0",
     "uuid": "^10.0.0",
     "viem": "^2.17.0"

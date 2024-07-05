@@ -7,6 +7,7 @@ import BottomNav from '../components/BottomNav';
 import Image from 'next/image';
 import ProgressBar from '../components/ProgressBar';
 import { Lilita_One } from 'next/font/google';
+import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Mic, MicOff, Repeat, SwitchCamera } from 'lucide-react';
 
@@ -34,6 +35,12 @@ export default function Home() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   useEffect(() => {
     return () => {
@@ -90,7 +97,7 @@ export default function Home() {
   const checkMediaAccess = async () => {
     try {
       const constraints = { 
-        video: { facingMode: cameraFacingMode },
+        video: isMobile ? { facingMode: cameraFacingMode } : true,
         audio: true 
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -108,8 +115,10 @@ export default function Home() {
     } catch (error) {
       console.error('Error accessing media devices:', error);
       setHasMediaAccess(false);
+      toast.error('Failed to access camera. Please check your permissions.');
     }
   };
+  
 
   const switchCamera = async () => {
     setCameraFacingMode(prev => prev === 'user' ? 'environment' : 'user');
@@ -121,29 +130,39 @@ export default function Home() {
 
   const startRecording = async () => {
     try {
-      setError("")
-      setUploading(false)
+      setError("");
+      setUploading(false);
       if (!streamRef.current) {
         await checkMediaAccess();
       }
       
       if (!streamRef.current) throw new Error('Failed to access media devices');
-
-      const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+  
+      let options;
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        options = { mimeType: 'video/webm;codecs=vp8,opus' };
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        options = { mimeType: 'video/mp4' };
+      } else {
+        throw new Error('No supported media recorder options');
+      }
+  
       mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
       
       const chunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
+        const blob = new Blob(chunks, { type: options.mimeType });
         setRecordedVideo(URL.createObjectURL(blob));
         handleUpload(blob);
       };
-
+  
       mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingProgress(100);
-
+  
       let timeLeft = MAX_RECORDING_TIME;
       timerRef.current = setInterval(() => {
         timeLeft -= 0.1;
@@ -153,12 +172,13 @@ export default function Home() {
           stopRecording();
         }
       }, 100);
-
+  
       setTimeout(stopRecording, MAX_RECORDING_TIME * 1000);
     } catch (error) {
       console.error('Error starting recording:', error);
-      setError('Failed to start recording');
+      setError('Failed to start recording: ' + (error as Error).message);
       setHasMediaAccess(false);
+      toast.error('Failed to start recording. Please try again.');
     }
   };
 
@@ -399,16 +419,16 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-      {uploading || error && (
-        <motion.p 
-          className="text-red-500 text-sm mt-4 bg-white px-4 py-2 rounded-full shadow"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-        >
-          {error || "uploading video..."}
-        </motion.p>
-      )}
+        {error && (
+          <motion.p 
+            className="text-red-500 text-sm mt-4 bg-white px-4 py-2 rounded-full shadow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {error}
+          </motion.p>
+        )}
       </main>
 
 
