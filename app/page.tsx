@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import BottomNav from '../components/BottomNav';
+import Image from 'next/image';
 import ProgressBar from '../components/ProgressBar';
 
 const MAX_RECORDING_TIME = 20; // seconds
@@ -178,7 +179,15 @@ export default function Home() {
 
             {gifLink && castHash && (
               <div className="mt-4 w-full">
-                <img src={gifLink} alt="Uploaded GIF" className="w-full rounded-md" />
+                <div className="relative w-full aspect-square">
+                  <Image 
+                    src={gifLink} 
+                    alt="Uploaded GIF" 
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-md"
+                  />
+                </div>
                 <a 
                   href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`}
                   target="_blank"

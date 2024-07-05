@@ -1,3 +1,4 @@
+// app/v/[uuid]/page.tsx
 'use client'
 
 import React, { useState, useRef } from 'react';
@@ -7,7 +8,13 @@ import ProgressBar from '../../../components/ProgressBar';
 
 const MAX_RECORDING_TIME = 20; // seconds
 
-export default function VideoPage({ params }) {
+interface VideoPageProps {
+  params: {
+    uuid: string;
+  };
+}
+
+export default function VideoPage({ params }: VideoPageProps) {
   const { uuid } = params;
   const videoUrl = `https://res.cloudinary.com/dzpugkpuz/image/upload/v1720177955/videos/uploaded_videos/${uuid}.mov`;
   
@@ -15,13 +22,13 @@ export default function VideoPage({ params }) {
   const [recordingProgress, setRecordingProgress] = useState(100);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [castHash, setCastHash] = useState(null);
-  const [gifLink, setGifLink] = useState(null);
-  const [error, setError] = useState(null);
+  const [castHash, setCastHash] = useState<string | null>(null);
+  const [gifLink, setGifLink] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { authenticated, user, login } = usePrivy();
-  const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const timerRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startRecording = async () => {
     if (!authenticated) {
@@ -31,10 +38,12 @@ export default function VideoPage({ params }) {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      videoRef.current.srcObject = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
       mediaRecorderRef.current = new MediaRecorder(stream);
       
-      const chunks = [];
+      const chunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
@@ -68,7 +77,9 @@ export default function VideoPage({ params }) {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      if (videoRef.current && videoRef.current.srcObject instanceof MediaStream) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -76,7 +87,7 @@ export default function VideoPage({ params }) {
     }
   };
 
-  const handleUpload = async (videoBlob) => {
+  const handleUpload = async (videoBlob: Blob) => {
     setUploading(true);
     setUploadProgress(0);
     setCastHash(null);
@@ -87,7 +98,9 @@ export default function VideoPage({ params }) {
     if (user?.farcaster) {
       formData.append('farcasterUser', JSON.stringify(user.farcaster));
     }
-    formData.append('userId', user.id);
+    if (user?.id) {
+      formData.append('userId', user.id);
+    }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_ROUTE}/video`, {
@@ -99,7 +112,10 @@ export default function VideoPage({ params }) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const reader = response.body.getReader();
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is null');
+      }
       const decoder = new TextDecoder();
 
       while (true) {
