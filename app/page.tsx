@@ -27,7 +27,7 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   const { authenticated, user, logout, login } = usePrivy();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -46,6 +46,11 @@ export default function Home() {
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    });
   }, []);
 
   useEffect(() => {
@@ -53,6 +58,28 @@ export default function Home() {
       checkMediaAccess();
     }
   }, [authenticated, cameraFacingMode]);
+
+  const syncVideoPlayback = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = videoRef.current.currentTime;
+    }
+    requestAnimationFrame(syncVideoPlayback);
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      requestAnimationFrame(syncVideoPlayback);
+      
+      const handleLoadedMetadata = () => {
+        videoRef.current?.play().catch(error => console.error('Error playing video:', error));
+      };
+      
+      videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => {
+        videoRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
+    }
+  }, []);
 
   const stopMediaTracks = () => {
     if (streamRef.current) {
@@ -71,6 +98,12 @@ export default function Home() {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.muted = isMuted;
+          }
+        }, 300);
       }
     } catch (error) {
       console.error('Error accessing media devices:', error);
@@ -96,12 +129,13 @@ export default function Home() {
       
       if (!streamRef.current) throw new Error('Failed to access media devices');
 
-      mediaRecorderRef.current = new MediaRecorder(streamRef.current);
+      const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
       
       const chunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const blob = new Blob(chunks, { type: 'video/webm' });
         setRecordedVideo(URL.createObjectURL(blob));
         handleUpload(blob);
       };
@@ -147,7 +181,7 @@ export default function Home() {
   
     const formData = new FormData();
     try {
-      formData.append('video', videoBlob, 'recorded_video.mp4');
+      formData.append('video', videoBlob, 'recorded_video.webm');
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
       }
@@ -200,6 +234,20 @@ export default function Home() {
     checkMediaAccess();
   };
 
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        setDeferredPrompt(null);
+      });
+    }
+  };
+
   const titleVariants = {
     hidden: { opacity: 0, y: -50 },
     visible: { 
@@ -229,71 +277,77 @@ export default function Home() {
   return (
     <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col items-center justify-center flex-grow">
       <main className='grow flex flex-col w-full items-center justify-center'>
-      <motion.h1 
-        className={`text-5xl font-bold mb-4 text-purple-800 text-center ${lilitaOne.className}`}
-        variants={titleVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        guarpcast
-      </motion.h1>
-      
-      <AnimatePresence mode="wait">
-        {authenticated ? (
-          <motion.div
-            key="authenticated"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
-            <div className="w-full rounded-lg shadow-lg overflow-hidden rounded-xl px-2">
-              {gifLink && castHash ? (
-                <div className="p-4 w-full">
-                  <div className="relative w-full aspect-video mb-4">
-                    <Image 
-                      unoptimized={true}
-                      src={gifLink}
-                      alt="uploaded gif"
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className="rounded-md"
-                    />
+        <motion.h1 
+          className={`text-5xl font-bold mb-4 text-purple-800 text-center ${lilitaOne.className}`}
+          variants={titleVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          guarpcast
+        </motion.h1>
+        
+        <AnimatePresence mode="wait">
+          {authenticated ? (
+            <motion.div
+              key="authenticated"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full"
+            >
+              <div className="w-full rounded-lg shadow-lg overflow-hidden rounded-xl px-2">
+                {gifLink && castHash ? (
+                  <div className="p-4 w-full">
+                    <div className="relative w-full aspect-video mb-4">
+                      <Image 
+                        unoptimized={true}
+                        src={gifLink}
+                        alt="uploaded gif"
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        className="rounded-md"
+                      />
+                    </div>
+                    <a 
+                      href={`https://www.warpcast.com/~/conversations/${castHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
+                    >
+                      View on Warpcast
+                    </a>
+                    <button
+                      onClick={resetRecording}
+                      className="mt-2 w-full flex items-center justify-center bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300"
+                    >
+                      <Repeat className="mr-2" size={18} />
+                      new video
+                    </button>
                   </div>
-                  <a 
-                    href={`https://www.warpcast.com/~/conversations/${castHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
-                  >
-                    View on Warpcast
-                  </a>
-                  <button
-                    onClick={resetRecording}
-                    className="mt-2 w-full flex items-center justify-center bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300"
-                  >
-                    <Repeat className="mr-2" size={18} />
-                    new video
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="relative w-full aspect-video bg-black">
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted={isMuted} playsInline />
-                    {isRecording && (
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <ProgressBar progress={recordingProgress} />
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2 flex space-x-2">
-                      <button
-                        onClick={toggleMute}
-                        className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
-                      >
-                        {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                      </button>
-                      {isMobile && (
+                ) : (
+                  <>
+                    <div className="relative w-full aspect-video bg-black">
+                      <video 
+                        ref={videoRef} 
+                        className="w-full h-full object-cover" 
+                        autoPlay 
+                        playsInline 
+                        muted={isMuted}
+                      />
+                      {isRecording && (
+                        <div className="absolute bottom-0 left-0 right-0 p-2">
+                          <ProgressBar progress={recordingProgress} />
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 flex space-x-2">
+                        <button
+                          onClick={toggleMute}
+                          className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                        >
+                          {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                        </button>
+                        {isMobile && (
                           <button
                             onClick={switchCamera}
                             className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
@@ -301,50 +355,49 @@ export default function Home() {
                             <SwitchCamera size={20} />
                           </button>
                         )}
+                      </div>
                     </div>
-                  </div>
-            
-                  {!hasMediaAccess && (
-                    <button
-                      onClick={checkMediaAccess}
-                      className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300 flex items-center justify-center"
-                    >
-                      <Camera className="mr-2" size={18} />
-                      Allow Camera Access
-                    </button>
-                  )}
-                  {uploading && (
-                    <div className="w-full mt-4">
-                      <ProgressBar progress={uploadProgress} />
-                      <p className="text-center mt-2 text-sm text-gray-600">
-                        Uploading video, transforming it into a GIF, and casting it. Please wait...
-                      </p>
-                    </div>
-                  )}
-           
-                </>
-              )}
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="unauthenticated"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.p 
-              className={`text-center text-purple-800 mb-4 ${lilitaOne.className}`}
-              variants={subtitleVariants}
-              initial="hidden"
-              animate="visible"
+              
+                    {!hasMediaAccess && (
+                      <button
+                        onClick={checkMediaAccess}
+                        className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300 flex items-center justify-center"
+                      >
+                        <Camera className="mr-2" size={18} />
+                        Allow Camera Access
+                      </button>
+                    )}
+                    {uploading && (
+                      <div className="w-full mt-4">
+                        <ProgressBar progress={uploadProgress} />
+                        <p className="text-center mt-2 text-sm text-gray-600">
+                          Uploading video, transforming it into a GIF, and casting it. Please wait...
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="unauthenticated"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              share yourself
-            </motion.p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <motion.p 
+                className={`text-center text-purple-800 mb-4 ${lilitaOne.className}`}
+                variants={subtitleVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                share yourself
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {uploading || error && (
         <motion.p 
