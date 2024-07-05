@@ -6,6 +6,10 @@ import { usePrivy } from '@privy-io/react-auth';
 import BottomNav from '../components/BottomNav';
 import Image from 'next/image';
 import ProgressBar from '../components/ProgressBar';
+import { Lilita_One } from 'next/font/google'
+import { motion } from 'framer-motion';
+
+const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400', })
 
 const MAX_RECORDING_TIME = 20; // seconds
 
@@ -18,7 +22,7 @@ export default function Home() {
   const [castHash, setCastHash] = useState<string | null>(null);
   const [gifLink, setGifLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user, logout } = usePrivy();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,6 +34,32 @@ export default function Home() {
       }
     };
   }, []);
+
+  const titleVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        type: "spring",
+        stiffness: 200,
+        damping: 10
+      }
+    }
+  };
+
+  const subtitleVariants = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: "spring",
+        stiffness: 100,
+        delay: 0.5
+      }
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -147,8 +177,15 @@ export default function Home() {
 
   return (
     <>
-      <div className="h-full bg-white flex flex-col items-center justify-start p-4 pb-20">
-        <h1 className="text-2xl font-bold mb-4 text-black text-center">guarpcast</h1>
+      <div className="h-full bg-white flex flex-col items-center justify-center p-4 pb-20">
+        <motion.h1 
+          className={`text-5xl font-bold mb-4 text-black text-center ${lilitaOne.className}`}
+          variants={titleVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          guarpcast
+        </motion.h1>        {authenticated && <button className='bg-purple-600 rounded-xl p-2 text-white mb-2 hover:bg-purple-400' onClick={logout}>logout</button>}
         
         {authenticated ? (
           <>
@@ -200,7 +237,14 @@ export default function Home() {
             )}
           </>
         ) : (
-          <p className="text-center text-gray-600">Click the Record button to login and start recording</p>
+          <motion.p 
+            className={`text-center text-gray-600`}
+            variants={subtitleVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            share yourself
+          </motion.p>
         )}
 
         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
