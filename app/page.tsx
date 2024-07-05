@@ -27,6 +27,7 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   const { authenticated, user, logout, login } = usePrivy();
   const videoRef = useRef<HTMLVideoElement | null>(null);
