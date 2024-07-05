@@ -248,7 +248,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error uploading video:', error);
-      setError(error.message || 'Failed to upload video');
+      setError('Failed to upload video');
     } finally {
       setUploading(false);
       setRecordedVideo(null);
