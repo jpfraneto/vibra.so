@@ -106,16 +106,12 @@ export default function Home() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true;
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.muted = isMuted;
-          }
-        }, 300);
+        videoRef.current.play().catch(console.error);
       }
     } catch (error) {
       console.error('Error accessing media devices:', error);
       setHasMediaAccess(false);
-      toast.error('Failed to access camera. Please check your permissions.');
+      setError('Failed to access camera and microphone. Please check your permissions.');
     }
   };
   
@@ -139,14 +135,14 @@ export default function Home() {
       if (!streamRef.current) throw new Error('Failed to access media devices');
   
       let options;
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-        options = { mimeType: 'video/webm;codecs=vp9,opus' };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        options = { mimeType: 'video/webm;codecs=vp8,opus' };
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+      if (MediaRecorder.isTypeSupported('video/mp4')) {
         options = { mimeType: 'video/mp4' };
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+        options = { mimeType: 'video/webm;codecs=h264' };
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        options = { mimeType: 'video/webm' };
       } else {
-        throw new Error('No supported media recorder options');
+        throw new Error('No supported video codec');
       }
   
       mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
@@ -178,7 +174,6 @@ export default function Home() {
       console.error('Error starting recording:', error);
       setError('Failed to start recording: ' + (error as Error).message);
       setHasMediaAccess(false);
-      toast.error('Failed to start recording. Please try again.');
     }
   };
 

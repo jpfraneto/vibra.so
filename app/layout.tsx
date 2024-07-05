@@ -4,6 +4,8 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import BottomNav from '../components/BottomNav';
 import MainComponent from '../components/MainComponent'
 import './globals.css';
+import { Toaster } from 'react-hot-toast';
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         >
           <MainComponent>{children}</MainComponent>
+          <Toaster />
         </PrivyProvider>
       </body>
     </html>
