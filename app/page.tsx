@@ -123,7 +123,7 @@ export default function Home() {
     setUploading(true);
     setUploadProgress(0);
     setCastHash(null);
-    setGifLink(null);
+    setGifLink("");
 
     const formData = new FormData();
     try {
