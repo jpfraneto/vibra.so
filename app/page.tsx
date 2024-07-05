@@ -182,7 +182,13 @@ export default function Home() {
             if (parsed.type === 'progress') {
               setUploadProgress(prev => prev + 20); // Increment progress by 20% for each step
             } else if (parsed.type === 'result') {
-              setGifLink(parsed.gifLink);
+              console.log("Received gif link:", parsed.gifLink);
+              if (parsed.gifLink && typeof parsed.gifLink === 'string' && parsed.gifLink.trim() !== '') {
+                setGifLink(parsed.gifLink);
+              } else {
+                console.error("Received invalid gif link:", parsed.gifLink);
+                setError('Failed to load GIF');
+              }
               setCastHash(parsed.castHash);
             }
           } catch (e) {
@@ -241,13 +247,13 @@ export default function Home() {
             {gifLink && castHash && (
               <div className="mt-4 w-full">
                 <div className="relative w-full aspect-square">
-                  <Image 
-                    src={gifLink} 
-                    alt="Uploaded GIF" 
-                    layout="fill"
-                    objectFit="cover"
+                <Image 
+                    src={gifLink}
+                    alt="uploaded gif"
+                    fill
+                    style={{ objectFit: 'cover' }}
                     className="rounded-md"
-                  />
+                 />
                 </div>
                 <a 
                   href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`}
