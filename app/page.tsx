@@ -8,7 +8,7 @@ import Image from 'next/image';
 import ProgressBar from '../components/ProgressBar';
 import { Lilita_One } from 'next/font/google';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Mic, MicOff, Repeat } from 'lucide-react';
+import { Camera, Mic, MicOff, Repeat, LogOut } from 'lucide-react';
 
 const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 
@@ -68,6 +68,8 @@ export default function Home() {
 
   const startRecording = async () => {
     try {
+      setError("")
+      setUploading(false)
       if (!streamRef.current) {
         await checkMediaAccess();
       }
@@ -226,7 +228,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col items-center justify-center p-4">
+    <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col items-center justify-center flex-grow">
+      <main className='grow flex flex-col w-full items-center justify-center'>
       <motion.h1 
         className={`text-5xl font-bold mb-4 text-purple-800 text-center ${lilitaOne.className}`}
         variants={titleVariants}
@@ -244,11 +247,11 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-md"
+            className="w-full"
           >
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="w-full rounded-lg shadow-lg overflow-hidden rounded-xl px-2">
               {gifLink && castHash ? (
-                <div className="p-4">
+                <div className="p-4 w-full">
                   <div className="relative w-full aspect-video mb-4">
                     <Image 
                       unoptimized={true}
@@ -293,31 +296,25 @@ export default function Home() {
                       </button>
                     </div>
                   </div>
-                  <div className="p-4">
-                    {!hasMediaAccess && (
-                      <button
-                        onClick={checkMediaAccess}
-                        className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300 flex items-center justify-center"
-                      >
-                        <Camera className="mr-2" size={18} />
-                        Allow Camera Access
-                      </button>
-                    )}
-                    {uploading && (
-                      <div className="w-full mt-4">
-                        <ProgressBar progress={uploadProgress} />
-                      </div>
-                    )}
-                  </div>
+            
+                  {!hasMediaAccess && (
+                    <button
+                      onClick={checkMediaAccess}
+                      className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300 flex items-center justify-center"
+                    >
+                      <Camera className="mr-2" size={18} />
+                      Allow Camera Access
+                    </button>
+                  )}
+                  {uploading && (
+                    <div className="w-full mt-4">
+                      <ProgressBar progress={uploadProgress} />
+                    </div>
+                  )}
+           
                 </>
               )}
             </div>
-            <button 
-              className='mt-4 bg-purple-600 rounded-xl p-2 text-white w-full hover:bg-purple-700 transition duration-300' 
-              onClick={logout}
-            >
-              Logout
-            </button>
           </motion.div>
         ) : (
           <motion.div
@@ -335,26 +332,22 @@ export default function Home() {
             >
               share yourself
             </motion.p>
-            <button
-              onClick={login}
-              className="bg-purple-600 text-white py-2 px-6 rounded-full hover:bg-purple-700 transition duration-300 text-lg font-semibold"
-            >
-              Login to Start
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {error && (
+      {uploading || error && (
         <motion.p 
           className="text-red-500 text-sm mt-4 bg-white px-4 py-2 rounded-full shadow"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
         >
-          {error}
+          {error || "uploading video..."}
         </motion.p>
       )}
+      </main>
+
 
       <BottomNav 
         onRecordClick={startRecording}

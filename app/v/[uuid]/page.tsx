@@ -147,44 +147,20 @@ export default function VideoPage({ params }: VideoPageProps) {
 
   return (
     <>
-      <div className="h-full bg-black flex flex-col items-center justify-center p-4 pb-20">
-        <video 
+    <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col flex-grow items-center justify-center flex-grow z-2">
+      <div className='grow w-full'>
+      <video 
           ref={videoRef}
           src={isRecording ? undefined : videoUrl} 
-          className="w-full h-full object-contain" 
+          className="w-full grow object-contain" 
           controls={!isRecording}
           autoPlay 
           loop 
           muted={isRecording}
           playsInline
         />
-        
-        {isRecording && (
-          <div className="absolute bottom-20 left-0 right-0 p-2">
-            <ProgressBar progress={recordingProgress} />
-          </div>
-        )}
-
-        {uploading && (
-          <div className="absolute bottom-20 left-0 right-0 p-2">
-            <ProgressBar progress={uploadProgress} />
-          </div>
-        )}
-
-        {gifLink && castHash && (
-          <div className="absolute bottom-20 left-0 right-0 p-4 bg-white">
-            <a 
-              href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
-            >
-              View on Warpcast
-            </a>
-          </div>
-        )}
-
-        {error && <p className="absolute bottom-20 left-0 right-0 text-red-500 text-sm text-center p-4">{error}</p>}
+      </div>
+ 
       </div>
       <BottomNav 
         onRecordClick={startRecording}

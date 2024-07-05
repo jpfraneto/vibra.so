@@ -2,6 +2,7 @@
 import React from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import BottomNav from '../components/BottomNav';
+import MainComponent from '../components/MainComponent'
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -27,13 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             },
           }}
         >
-          <div className="min-h-screen bg-black flex items-center justify-center">
-            <div className="w-full max-w-[375px] h-[812px] bg-white overflow-hidden relative shadow-lg rounded-lg">
-              <main className="h-full overflow-y-auto pb-16">
-                {children}
-              </main>
-            </div>
-          </div>
+          <MainComponent children={children}/>
         </PrivyProvider>
       </body>
     </html>

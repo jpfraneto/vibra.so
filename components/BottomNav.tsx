@@ -30,7 +30,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isRecording, stopR
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-black text-white">
+    <nav className="z-3 w-full bottom-0 left-0 right-0 bg-black text-white">
       <div className="flex justify-around items-center h-16 max-w-[375px] mx-auto">
         <NavItem icon={<Home size={24} />} label="Home" onClick={() => handleNavClick('home')} />
         <NavItem icon={<User size={24} />} label="Profile" onClick={() => handleNavClick('profile')} />
