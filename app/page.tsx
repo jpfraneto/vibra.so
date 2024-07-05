@@ -216,18 +216,12 @@ export default function Home() {
         >
           guarpcast
         </motion.h1>
+      
         {authenticated && <button className='bg-purple-600 rounded-xl p-2 text-white mb-2 hover:bg-purple-400' onClick={logout}>logout</button>}
         
         {authenticated ? (
           <>
-            <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative mb-4">
-              <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-              {isRecording && (
-                <div className="absolute bottom-0 left-0 right-0 p-2">
-                  <ProgressBar progress={recordingProgress} />
-                </div>
-              )}
-            </div>
+            
             
             {!hasMediaAccess && (
               <button
@@ -244,10 +238,11 @@ export default function Home() {
               </div>
             )}
 
-            {gifLink && castHash && (
+            {gifLink && castHash ? (
               <div className="mt-4 w-full">
-                <div className="relative w-full aspect-square">
+                <div className="relative w-full aspect-video">
                 <Image 
+                    unoptimized={true}
                     src={gifLink}
                     alt="uploaded gif"
                     fill
@@ -256,7 +251,7 @@ export default function Home() {
                  />
                 </div>
                 <a 
-                  href={`https://www.warpcast.com/!738435/${castHash.slice(0,10)}`}
+                  href={`https://www.warpcast.com/~/conversations/${castHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full text-center bg-purple-600 text-white py-2 px-4 mt-4 rounded-md hover:bg-purple-700 transition duration-300"
@@ -264,7 +259,14 @@ export default function Home() {
                   View on Warpcast
                 </a>
               </div>
+            ) : <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative mb-4">
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+            {isRecording && (
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <ProgressBar progress={recordingProgress} />
+              </div>
             )}
+          </div>}
           </>
         ) : (
           <motion.p 
