@@ -33,23 +33,23 @@ export default function Home() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      videoRef.current.srcObject = stream;
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      videoRef?.current?.srcObject = stream;
+      mediaRecorderRef?.current = new MediaRecorder(stream);
       
       const chunks = [];
-      mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef?.current.ondataavailable = (event) => chunks.push(event.data);
+      mediaRecorderRef?.current.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
         setRecordedVideo(URL.createObjectURL(blob));
       };
 
-      mediaRecorderRef.current.start();
+      mediaRecorderRef?.current.start();
       setIsRecording(true);
       setRecordingProgress(100);
 
       // Start the timer for progress bar
       let timeLeft = MAX_RECORDING_TIME;
-      timerRef.current = setInterval(() => {
+      timerRef?.current = setInterval(() => {
         timeLeft -= 0.1;
         const progress = (timeLeft / MAX_RECORDING_TIME) * 100;
         setRecordingProgress(progress);
@@ -103,7 +103,7 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const reader = response.body.getReader();
+      const reader = response?.body.getReader();
       const decoder = new TextDecoder();
 
       while (true) {
