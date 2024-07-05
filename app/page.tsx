@@ -124,7 +124,7 @@ export default function Home() {
     setUploadProgress(0);
     setCastHash(null);
     setGifLink("");
-
+  
     const formData = new FormData();
     try {
       formData.append('video', videoBlob, 'recorded_video.mp4');
@@ -134,47 +134,26 @@ export default function Home() {
       if (user?.id) {
         formData.append('userId', user.id);
       }
-
+  
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_ROUTE}/video`, {
         method: 'POST',
         body: formData,
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('Response body is null');
+  
+      const result = await response.json();
+  
+      if (result.gifLink && typeof result.gifLink === 'string' && result.gifLink.trim() !== '') {
+        setGifLink(result.gifLink);
+      } else {
+        console.error("Received invalid gif link:", result.gifLink);
+        setError('Failed to load GIF');
       }
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const decodedChunk = decoder.decode(value, { stream: true });
-        const lines = decodedChunk.split('\n').filter(line => line.trim() !== '');
-        lines.forEach(line => {
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.type === 'progress') {
-              setUploadProgress(prev => Math.min(prev + 20, 100));
-            } else if (parsed.type === 'result') {
-              console.log("Received gif link:", parsed.gifLink);
-              if (parsed.gifLink && typeof parsed.gifLink === 'string' && parsed.gifLink.trim() !== '') {
-                setGifLink(parsed.gifLink);
-              } else {
-                console.error("Received invalid gif link:", parsed.gifLink);
-                setError('Failed to load GIF');
-              }
-              setCastHash(parsed.castHash);
-            }
-          } catch (e) {
-            console.error('Error parsing server message:', e);
-          }
-        });
-      }
+      setCastHash(result.castHash);
+      setUploadProgress(100);
     } catch (error) {
       console.error('Error uploading video:', error);
       setError('Failed to upload video');
@@ -309,6 +288,9 @@ export default function Home() {
                   {uploading && (
                     <div className="w-full mt-4">
                       <ProgressBar progress={uploadProgress} />
+                      <p className="text-center mt-2 text-sm text-gray-600">
+                        Uploading video, transforming it into a GIF, and casting it. Please wait...
+                      </p>
                     </div>
                   )}
            
