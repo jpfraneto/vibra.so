@@ -9,18 +9,18 @@ import ProgressBar from '../components/ProgressBar';
 const MAX_RECORDING_TIME = 20; // seconds
 
 export default function Home() {
-  const [recordedVideo, setRecordedVideo] = useState(null);
+  const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(100);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [castHash, setCastHash] = useState(null);
-  const [gifLink, setGifLink] = useState(null);
-  const [error, setError] = useState(null);
+  const [castHash, setCastHash] = useState<string | null>(null);
+  const [gifLink, setGifLink] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { authenticated, user } = usePrivy();
-  const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const timerRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
@@ -33,23 +33,25 @@ export default function Home() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      videoRef?.current?.srcObject = stream;
-      mediaRecorderRef?.current = new MediaRecorder(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      mediaRecorderRef.current = new MediaRecorder(stream);
       
-      const chunks = [];
-      mediaRecorderRef?.current.ondataavailable = (event) => chunks.push(event.data);
-      mediaRecorderRef?.current.onstop = () => {
+      const chunks: Blob[] = [];
+      mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
+      mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
         setRecordedVideo(URL.createObjectURL(blob));
       };
 
-      mediaRecorderRef?.current.start();
+      mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingProgress(100);
 
       // Start the timer for progress bar
       let timeLeft = MAX_RECORDING_TIME;
-      timerRef?.current = setInterval(() => {
+      timerRef.current = setInterval(() => {
         timeLeft -= 0.1;
         const progress = (timeLeft / MAX_RECORDING_TIME) * 100;
         setRecordingProgress(progress);
@@ -70,7 +72,9 @@ export default function Home() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      if (videoRef.current && videoRef.current.srcObject instanceof MediaStream) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -87,13 +91,16 @@ export default function Home() {
     setGifLink(null);
 
     const formData = new FormData();
-    formData.append('video', await fetch(recordedVideo).then(r => r.blob()), 'recorded_video.mp4');
-    if (user?.farcaster) {
-      formData.append('farcasterUser', JSON.stringify(user.farcaster));
-    }
-    formData.append('userId', user.id);
-
     try {
+      const videoBlob = await fetch(recordedVideo).then(r => r.blob());
+      formData.append('video', videoBlob, 'recorded_video.mp4');
+      if (user?.farcaster) {
+        formData.append('farcasterUser', JSON.stringify(user.farcaster));
+      }
+      if (user?.id) {
+        formData.append('userId', user.id);
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_ROUTE}/video`, {
         method: 'POST',
         body: formData,
@@ -103,7 +110,10 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const reader = response?.body.getReader();
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is null');
+      }
       const decoder = new TextDecoder();
 
       while (true) {
