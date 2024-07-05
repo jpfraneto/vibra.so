@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             },
           }}
         >
-          <MainComponent children={children}/>
+          <MainComponent>{children}</MainComponent>
         </PrivyProvider>
       </body>
     </html>
