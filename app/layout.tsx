@@ -26,11 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PrivyProvider
           appId="cly7pecis0267vpbugrpyvis6"
           config={{
-            externalWallets: { 
-              coinbaseWallet: { 
-                connectionOptions: 'smartWalletOnly', 
-              }, 
-            }, 
+            loginMethods: ['farcaster'],
+            // externalWallets: { 
+            //   coinbaseWallet: { 
+            //     connectionOptions: 'smartWalletOnly', 
+            //   }, 
+            // }, 
             appearance: {
               theme: 'light',
               accentColor: '#00FFFFF',

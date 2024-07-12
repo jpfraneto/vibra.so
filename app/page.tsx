@@ -9,7 +9,7 @@ import ProgressBar from '../components/ProgressBar';
 import { Lilita_One } from 'next/font/google';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Mic, MicOff, Repeat, SwitchCamera } from 'lucide-react';
+import { Camera, Mic, MicOff, Repeat, SwitchCamera, StopCircle, Video, Users, Zap, Globe, Gift } from 'lucide-react';
 import mime from 'mime-types';
 
 const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
@@ -17,178 +17,147 @@ const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 const MAX_RECORDING_TIME = 20; // seconds
 
 export default function Home() {
-  const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingProgress, setRecordingProgress] = useState(100);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [castHash, setCastHash] = useState<string | null>(null);
-  const [gifLink, setGifLink] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [hasMediaAccess, setHasMediaAccess] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  const { authenticated, user, logout, login } = usePrivy();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+    const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingProgress, setRecordingProgress] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [castHash, setCastHash] = useState<string | null>(null);
+    const [gifLink, setGifLink] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
+    const [hasMediaAccess, setHasMediaAccess] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
+  
+    const { authenticated, user, logout, login } = usePrivy();
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+    useEffect(() => {
+      if (error) {
+        toast.error(error);
       }
-      stopMediaTracks();
-    };
-  }, []);
-
-  useEffect(() => {
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (authenticated) {
-      checkMediaAccess();
-    }
-  }, [authenticated, cameraFacingMode]);
-
-  const syncVideoPlayback = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = videoRef.current.currentTime;
-    }
-    requestAnimationFrame(syncVideoPlayback);
-  };
-
-  useEffect(() => {
-    if (videoRef.current) {
-      requestAnimationFrame(syncVideoPlayback);
-      
-      const handleLoadedMetadata = () => {
-        videoRef.current?.play().catch(error => console.error('Error playing video:', error));
+    }, [error]);
+  
+    useEffect(() => {
+      const checkIfMobile = () => {
+        setIsMobile(window.innerWidth <= 768);
       };
-      
-      videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+  
+      checkIfMobile();
+      window.addEventListener('resize', checkIfMobile);
+  
       return () => {
-        videoRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        window.removeEventListener('resize', checkIfMobile);
+        stopMediaTracks();
       };
-    }
-  }, []);
-
-  const stopMediaTracks = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-  };
-
-  const checkMediaAccess = async () => {
-    try {
-      const constraints = { 
-        video: isMobile ? { facingMode: cameraFacingMode } : true,
-        audio: true 
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      setHasMediaAccess(true);
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-        videoRef.current.play().catch(console.error);
+    }, []);
+  
+    useEffect(() => {
+      if (authenticated) {
+        checkMediaAccess();
       }
-    } catch (error) {
-      console.error('Error accessing media devices:', error);
-      setHasMediaAccess(false);
-      setError('Failed to access camera and microphone. Please check your permissions.');
-    }
-  };
+    }, [authenticated, cameraFacingMode]);
   
-
-  const switchCamera = async () => {
-    setCameraFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    await checkMediaAccess();
-  };
-
-  const startRecording = async () => {
-    try {
-      setError("");
-      setUploading(false);
-      if (!streamRef.current) {
-        await checkMediaAccess();
+    const stopMediaTracks = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
-      
-      if (!streamRef.current) throw new Error('Failed to access media devices');
+    };
   
-      let options;
-      if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { mimeType: 'video/mp4' };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-        options = { mimeType: 'video/webm;codecs=h264' };
-      } else if (MediaRecorder.isTypeSupported('video/webm')) {
-        options = { mimeType: 'video/webm' };
-      } else {
-        throw new Error('No supported video codec');
-      }
-  
-      mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
-  
-      
-      const chunks: Blob[] = [];
-      mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        setRecordedVideo(URL.createObjectURL(blob));
-        handleUpload(blob);
-      };
-  
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-      setRecordingProgress(100);
-  
-      let timeLeft = MAX_RECORDING_TIME;
-      timerRef.current = setInterval(() => {
-        timeLeft -= 0.1;
-        const progress = (timeLeft / MAX_RECORDING_TIME) * 100;
-        setRecordingProgress(progress);
-        if (timeLeft <= 0) {
-          stopRecording();
+    const checkMediaAccess = async () => {
+      try {
+        const constraints = { 
+          video: isMobile ? { facingMode: cameraFacingMode } : true,
+          audio: true 
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        setHasMediaAccess(true);
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.muted = true;
+          videoRef.current.play().catch(console.error);
         }
-      }, 100);
-  
-      setTimeout(stopRecording, MAX_RECORDING_TIME * 1000);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      setError('Failed to start recording: ' + (error as Error).message);
-      setHasMediaAccess(false);
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      } catch (error) {
+        console.error('Error accessing media devices:', error);
+        setHasMediaAccess(false);
+        setError('Failed to access camera and microphone. Please check your permissions.');
       }
-      setRecordingProgress(0);
-    }
-  };
+    };
+  
+    const switchCamera = async () => {
+      setCameraFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+      stopMediaTracks();
+      await checkMediaAccess();
+    };
+  
+    const startRecording = async () => {
+      try {
+        setError("");
+        setUploading(false);
+        if (!streamRef.current) {
+          await checkMediaAccess();
+        }
+        
+        if (!streamRef.current) throw new Error('Failed to access media devices');
+    
+        let options;
+        if (MediaRecorder.isTypeSupported('video/mp4')) {
+          options = { mimeType: 'video/mp4' };
+        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+          options = { mimeType: 'video/webm;codecs=h264' };
+        } else if (MediaRecorder.isTypeSupported('video/webm')) {
+          options = { mimeType: 'video/webm' };
+        } else {
+          throw new Error('No supported video codec');
+        }
+    
+        mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
+    
+        const chunks: Blob[] = [];
+        mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
+        mediaRecorderRef.current.onstop = () => {
+          const blob = new Blob(chunks, { type: options.mimeType });
+          setRecordedVideo(URL.createObjectURL(blob));
+          handleUpload(blob);
+        };
+    
+        mediaRecorderRef.current.start();
+        setIsRecording(true);
+        setRecordingProgress(0);
+    
+        let timeLeft = MAX_RECORDING_TIME;
+        timerRef.current = setInterval(() => {
+          timeLeft -= 0.1;
+          const progress = ((MAX_RECORDING_TIME - timeLeft) / MAX_RECORDING_TIME) * 100;
+          setRecordingProgress(progress);
+          if (timeLeft <= 0) {
+            stopRecording();
+          }
+        }, 100);
+    
+        setTimeout(stopRecording, MAX_RECORDING_TIME * 1000);
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        setError('Failed to start recording: ' + (error as Error).message);
+        setHasMediaAccess(false);
+      }
+    };
+  
+    const stopRecording = () => {
+      if (mediaRecorderRef.current && isRecording) {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+        setRecordingProgress(0);
+      }
+    };
 
   function getFileExtensionFromMimeType(mimeType: string): string {
     switch (mimeType) {
@@ -215,7 +184,7 @@ export default function Home() {
       // Determine the correct file extension based on the blob's type
       const fileExtension = getFileExtensionFromMimeType(videoBlob.type);
       formData.append('video', videoBlob, `recorded_video.${mime.extension(videoBlob.type)}`);
-      
+      console.log("The user is: ", user)
       if (user?.farcaster) {
         formData.append('farcasterUser', JSON.stringify(user.farcaster));
       }
@@ -232,6 +201,8 @@ export default function Home() {
         },
         body: formData,
       });
+
+      console.log("after the response", response)
   
       if (!response.ok) {
         const errorText = await response.text();
@@ -239,6 +210,7 @@ export default function Home() {
       }
   
       const result = await response.json();
+      console.log("ALOJA", result)
   
       if (result.error) {
         throw new Error(result.error);
@@ -277,187 +249,140 @@ export default function Home() {
     checkMediaAccess();
   };
 
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-        } else {
-          console.log('User dismissed the install prompt');
-        }
-        setDeferredPrompt(null);
-      });
-    }
-  };
+  const phoneClasses = isMobile
+    ? "w-[80vw] h-[70vh] mx-auto"
+    : "w-[350px] h-[640px] mx-auto";
 
-  const titleVariants = {
-    hidden: { opacity: 0, y: -50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 200,
-        damping: 10
-      }
-    }
-  };
-
-  const subtitleVariants = {
-    hidden: { opacity: 0, scale: 0.5 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        type: "spring",
-        stiffness: 100,
-        delay: 0.5
-      }
-    }
-  };
+  const circleCircumference = 2 * Math.PI * 30;
+  const strokeDashoffset = circleCircumference - (recordingProgress / 100) * circleCircumference;
 
   return (
-    <div className="h-full bg-gradient-to-b from-purple-100 to-purple-300 flex flex-col items-center justify-center flex-grow">
-      <main className='grow flex flex-col w-full items-center justify-center'>
-        <motion.h1 
-          className={`text-5xl font-bold mb-4 text-purple-800 text-center ${lilitaOne.className}`}
-          variants={titleVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          guarpcast
-        </motion.h1>
-        
-        <AnimatePresence mode="wait">
-          {authenticated ? (
-            <motion.div
-              key="authenticated"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="w-full"
-            >
-              <div className="w-full rounded-lg shadow-lg overflow-hidden rounded-xl px-2">
-                {gifLink && castHash ? (
-                  <div className="p-4 w-full">
-                    <div className="relative w-full aspect-video mb-4">
-                      <Image 
-                        unoptimized={true}
-                        src={gifLink}
-                        alt="uploaded gif"
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        className="rounded-md"
-                      />
-                    </div>
-                    <a 
-                      href={`https://www.warpcast.com/~/conversations/${castHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full text-center bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300"
-                    >
-                      View on Warpcast
-                    </a>
-                    <button
-                      onClick={resetRecording}
-                      className="mt-2 w-full flex items-center justify-center bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300"
-                    >
-                      <Repeat className="mr-2" size={18} />
-                      new video
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className={`relative w-full ${isMobile ? "h-full" : "aspect-video" } bg-black`}>
-                      <video 
-                        ref={videoRef} 
-                        className="w-full h-full object-cover" 
-                        autoPlay 
-                        playsInline 
-                        muted={isMuted}
-                      />
-                      {isRecording && (
-                        <div className="absolute bottom-0 left-0 right-0 p-2">
-                          <ProgressBar progress={recordingProgress} />
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 flex space-x-2">
-                        <button
-                          onClick={toggleMute}
-                          className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
-                        >
-                          {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                        </button>
-                        {isMobile && (
-                          <button
-                            onClick={switchCamera}
-                            className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
-                          >
-                            <SwitchCamera size={20} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-              
-                    {!hasMediaAccess && (
-                      <button
-                        onClick={checkMediaAccess}
-                        className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300 flex items-center justify-center"
-                      >
-                        <Camera className="mr-2" size={18} />
-                        Allow Camera Access
-                      </button>
-                    )}
-                    {uploading && (
-                      <div className="w-full mt-4">
-                        <ProgressBar progress={uploadProgress} />
-                        <p className="text-center mt-2 text-sm text-gray-600">
-                          Uploading video, transforming it into a GIF, and casting it. Please wait...
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="unauthenticated"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.p 
-                className={`text-center text-purple-800 mb-4 ${lilitaOne.className}`}
-                variants={subtitleVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                share yourself
-              </motion.p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className="min-h-screen bg-yellow-300 font-mono text-black">
+      <header className="bg-purple-600 p-4 flex justify-between items-center border-b-4 border-black">
+        <h1 className={`text-4xl font-black text-white tracking-tighter ${lilitaOne.className}`}>vibra</h1>
+        <nav>
+          <a target='_blank' href="https://warpcast.com/~/channel/vibra" className="text-white font-bold mx-2 hover:underline text-lg">/vibra</a>
+          <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+vibra&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding
+" className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
+        </nav>
+      </header>
 
-        {error && (
-          <motion.p 
-            className="text-red-500 text-sm mt-4 bg-white px-4 py-2 rounded-full shadow"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            {error}
-          </motion.p>
-        )}
+      <main className="container mx-auto mt-4">
+        <div className="flex flex-col items-center">
+          <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
+            <video 
+              ref={videoRef} 
+              className={`w-full h-full object-cover ${hasMediaAccess ? 'block' : 'hidden'}`}
+              autoPlay 
+              playsInline 
+              muted={isMuted}
+            />
+            {!hasMediaAccess && (
+              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                <h2 className="text-2xl font-black mb-4">welcome to vibra</h2>
+                <p className="text-cyan-500 text-lg font-bold">SHARE WHO YOU ARE</p>
+                <p className="text-purple-500 text-lg font-bold">CONNECT WITH OTHERS</p>
+                <p className="text-yellow-500 text-xl font-black mt-2">stream. be yourself.</p>
+              </div>
+            )}
+            {hasMediaAccess && (
+              <div className="absolute top-2 right-2 flex space-x-2">
+                <button
+                  onClick={toggleMute}
+                  className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                >
+                  {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+                <button
+                  onClick={switchCamera}
+                  className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                >
+                  <SwitchCamera size={20} />
+                </button>
+              </div>
+            )}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+              <svg className="w-20 h-20">
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="30"
+                  fill="none"
+                  stroke="#ef4444"
+                  strokeWidth="4"
+                  strokeDasharray={circleCircumference}
+                  strokeDashoffset={strokeDashoffset}
+                  transform="rotate(-90 40 40)"
+                />
+              </svg>
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 ${isRecording ? 'bg-red-600 animate-pulse' : 'bg-red-500'} rounded-full font-bold active:background-yellow-500 flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]`}
+              >
+                {isRecording ? (
+                  <StopCircle size={24} className="text-white" />
+                ) : (
+                  <Camera size={24} className="text-white" />
+                )}
+              </button>
+            </div>
+            {isRecording && (
+              <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-bold animate-pulse">
+                Recording...
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-8 w-full max-w-2xl">
+            <div className="bg-white p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
+              <p className="text-xl mb-6 text-center font-bold">
+                vibra is a video-based Farcaster client bringing a fresh perspective to social media.
+              </p>
+
+              <div className="flex justify-center space-x-8 mb-8">
+                <div className="flex flex-col items-center">
+                  <Video className="text-purple-600 mb-2" size={36} />
+                  <span className="text-lg font-bold">Stream</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Users className="text-cyan-500 mb-2" size={36} />
+                  <span className="text-lg font-bold">Connect</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Camera className="text-yellow-500 mb-2" size={36} />
+                  <span className="text-lg font-bold">Be Yourself</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-cyan-300 p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
+              <h3 className="text-3xl font-black mb-4">Built on Farcaster</h3>
+              <p className="text-lg mb-4">
+                vibra is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.
+              </p>
+              <div className="flex justify-around">
+                <div className="flex flex-col items-center">
+                  <Zap className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Fast & Efficient</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Globe className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Farcaster Network</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Gift className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Community Driven</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
-      <BottomNav 
-        onRecordClick={startRecording}
-        isRecording={isRecording}
-        stopRecording={stopRecording}
-      />
+
+      <footer className="bg-purple-600 text-white text-center p-4 mt-8 border-t-4 border-black">
+        <p className="text-lg font-bold">&copy; 2024 guarpcast App. All rights reserved.</p>
+        <p className="text-base">Powered by Farcaster & Moxie</p>
+      </footer>
     </div>
   );
 }
