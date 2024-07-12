@@ -262,11 +262,9 @@ export default function Home() {
         <h1 className={`text-4xl font-black text-white tracking-tighter ${lilitaOne.className}`}>vibra</h1>
         <nav>
           <a target='_blank' href="https://warpcast.com/~/channel/vibra" className="text-white font-bold mx-2 hover:underline text-lg">/vibra</a>
-          <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+%2Fvibra&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding
-" className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
+          <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+%2Fvibra%0A%0Ai+want+early+access+%40jpfraneto%0A%0Ahttps%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding" className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
         </nav>
       </header>
-
       <main className="container mx-auto mt-4">
         <div className="flex flex-col items-center">
           <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
