@@ -1,28 +1,57 @@
-// components/VideoRecorder.tsx
-import React, { ReactNode, useRef, useState } from 'react';
-import { Camera } from 'lucide-react';
-import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
-import { LogIn, LogOut } from 'lucide-react';
+// components/MainComponent.tsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
+import BottomNav from './BottomNav';
+import VibrationEffect from './VibrationEffect';
 
+const MainComponent = ({ children }: { children: React.ReactNode }) => {
+  const { authenticated, logout, login } = usePrivy();
+  const [isVibrating, setIsVibrating] = useState(false);
+  const [intensity, setIntensity] = useState(1);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
-const MainComponent  = ({ children }: { children: React.ReactNode }) => {
-    const { authenticated, logout, login } = usePrivy()
+  const handleVibrateClick = useCallback(() => {
+    setIsVibrating(true);
+    setIntensity(prev => Math.min(prev + 1, 5));
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(() => {
+      setIsVibrating(false);
+      setIntensity(1);
+    }, 3000);
+
+    setTimer(newTimer);
+  }, [timer]);
+
+  useEffect(() => {
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [timer]);
 
   return (
     <div className="h-screen bg-black flex items-center justify-center">
+      <VibrationEffect isVibrating={isVibrating} intensity={intensity}>
         <div className="w-full flex-grow flex max-w-[375px] h-screen max-h-[812px] bg-white overflow-hidden relative shadow-lg rounded-lg">
-        
-        {/* <span 
-        className={`absolute top-2 right-2 z-10 w-12 h-12 ${authenticated ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700"} hover:cursor-pointer rounded-full p-2 text-white  flex justify-center items-center transition duration-300`}
-        onClick={authenticated ? logout : login}
-        >
-        {authenticated ? <LogOut/> : <LogIn />}
-        </span> */}
-        <main className="grow overflow-y-auto relative">
+          <main className="grow overflow-y-auto relative">
             {children}
-        </main>
+          </main>
+          <div className='w-full absolute bottom-0'>
+            <BottomNav
+              onRecordClick={() => {}}
+              isVibrating={isVibrating}
+              stopRecording={() => {}}
+              onVibrateClick={handleVibrateClick}
+            />
+          </div>
         </div>
-  </div>
+      </VibrationEffect>
+    </div>
   );
 };
 

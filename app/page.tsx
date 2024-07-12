@@ -257,12 +257,12 @@ export default function Home() {
   const strokeDashoffset = circleCircumference - (recordingProgress / 100) * circleCircumference;
 
   return (
-    <div className="min-h-screen bg-yellow-300 font-mono text-black">
+    <div className=" min-h-screen bg-yellow-300 font-mono text-black">
       <header className="bg-purple-600 p-4 flex justify-between items-center border-b-4 border-black">
         <h1 className={`text-4xl font-black text-white tracking-tighter ${lilitaOne.className}`}>vibra</h1>
         <nav>
           <a target='_blank' href="https://warpcast.com/~/channel/vibra" className="text-white font-bold mx-2 hover:underline text-lg">/vibra</a>
-          <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+vibra&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding
+          <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+%2Fvibra&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding
 " className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
         </nav>
       </header>
@@ -379,8 +379,8 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="bg-purple-600 text-white text-center p-4 mt-8 border-t-4 border-black">
-        <p className="text-lg font-bold">&copy; 2024 guarpcast App. All rights reserved.</p>
+      <footer className="bg-purple-600 text-white text-center p-4 mt-8 pb-16 border-t-4 border-black">
+        <p className="text-lg font-bold">&copy; 2024 Vibra. All rights reserved.</p>
         <p className="text-base">Powered by Farcaster & Moxie</p>
       </footer>
     </div>
