@@ -21,6 +21,7 @@ export default function Home() {
     const [isMuted, setIsMuted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
+    const [postDownloadState, setPostDownloadState] = useState(false);
   
     const { authenticated, user } = usePrivy();
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -170,18 +171,18 @@ export default function Home() {
       if (recordedVideo) {
         const a = document.createElement('a');
         a.href = recordedVideo;
-        // Determine the file extension based on the MIME type
         const fileExtension = mediaRecorderRef.current?.mimeType.includes('mp4') ? 'mp4' : 'webm';
         a.download = `vibra_recording.${fileExtension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setPostDownloadState(true);
       }
     };
 
-
     const resetRecording = () => {
       setRecordedVideo(null);
+      setPostDownloadState(false);
       setError(null);
       checkMediaAccess();
     };
@@ -205,7 +206,7 @@ export default function Home() {
         <main className="container mx-auto mt-4">
           <div className="flex flex-col items-center">
             <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
-              {!hasMediaAccess && !recordedVideo && (
+              {!hasMediaAccess && !recordedVideo && !postDownloadState && (
                 <div className="flex flex-col items-center justify-center h-full p-4 text-center">
                   <h2 className="text-2xl font-black mb-4">welcome to vibra</h2>
                   <p className="text-cyan-500 text-lg font-bold">SHARE WHO YOU ARE</p>
@@ -213,7 +214,7 @@ export default function Home() {
                   <p className="text-yellow-500 text-xl font-black mt-2">stream. be yourself.</p>
                 </div>
               )}
-              {hasMediaAccess && !recordedVideo && (
+              {hasMediaAccess && !recordedVideo && !postDownloadState && (
                 <>
                   <video 
                     ref={videoRef} 
@@ -238,7 +239,7 @@ export default function Home() {
                   </div>
                 </>
               )}
-              {recordedVideo && (
+              {recordedVideo && !postDownloadState && (
                 <video 
                   ref={recordedVideoRef}
                   className="w-full h-full object-cover"
@@ -247,6 +248,14 @@ export default function Home() {
                   loop
                   playsInline
                 />
+              )}
+              {postDownloadState && (
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                  <p className="text-xl font-bold mb-4">soon, that video will be a cast</p>
+                  <p className="text-cyan-500 text-lg font-bold">you get the point</p>
+                  <p className="text-purple-500 text-lg font-bold">stay tuned</p>
+                  <a href="https://warpcast.com/~/channel/vibra" target="_blank" rel="noopener noreferrer" className="text-yellow-500 text-xl font-black mt-2 hover:underline">/vibra</a>
+                </div>
               )}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                 <svg className="w-20 h-20">
@@ -262,12 +271,19 @@ export default function Home() {
                     transform="rotate(-90 40 40)"
                   />
                 </svg>
-                {recordedVideo ? (
+                {recordedVideo && !postDownloadState ? (
                   <button
                     onClick={downloadVideo}
                     className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-500 rounded-full font-bold flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]"
                   >
                     <Download size={24} className="text-white" />
+                  </button>
+                ) : postDownloadState ? (
+                  <button
+                    onClick={resetRecording}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-green-500 rounded-full font-bold flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]"
+                  >
+                    <Repeat size={24} className="text-white" />
                   </button>
                 ) : (
                   <button
