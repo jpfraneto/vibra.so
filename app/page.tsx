@@ -334,7 +334,7 @@ export default function Home() {
           <div className="mt-8 w-full max-w-2xl">
             <div className="bg-white p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
               <p className="text-xl mb-6 text-center font-bold">
-                vibra is a video-based Farcaster client bringing a fresh perspective to social media.
+                vibra is a video-based Farcaster client that brings a fresh perspective to being social onchain.
               </p>
 
               <div className="flex justify-center space-x-8 mb-8">
@@ -348,15 +348,15 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col items-center">
                   <Camera className="text-yellow-500 mb-2" size={36} />
-                  <span className="text-lg font-bold">Be Yourself</span>
+                  <span className="text-lg font-bold text-center">Be Yourself</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-cyan-300 p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
-              <h3 className="text-3xl font-black mb-4">Built on Farcaster</h3>
+              <h3 className="text-3xl font-black mb-4">Farcaster</h3>
               <p className="text-lg mb-4">
-                vibra is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.
+                Vibra&apos;s identity is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.
               </p>
               <div className="flex justify-around">
                 <div className="flex flex-col items-center">
@@ -377,7 +377,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="bg-purple-600 text-white text-center p-4 mt-8 pb-16 border-t-4 border-black">
+      <footer className="bg-purple-600 text-white text-center p-4 mt-8 pb-20 border-t-4 border-black">
         <p className="text-lg font-bold">&copy; 2024 Vibra. All rights reserved.</p>
         <p className="text-base">Powered by Farcaster & Moxie</p>
       </footer>

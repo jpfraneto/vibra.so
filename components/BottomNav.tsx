@@ -21,6 +21,12 @@ const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isVibrating, stopR
       }
     } else if (route === 'vibrate') {
       onVibrateClick();
+    } else if (route === 'home') {
+      onVibrateClick();
+    } else if (route === 'profile') {
+      alert("who are you?")
+    } else if (route === 'wallet') {
+      alert("swap $water (solana) for $degen (base). the future is multichain. and the future is now.");
     }
   };
 
