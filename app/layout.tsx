@@ -26,7 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PrivyProvider
           appId="cly7pecis0267vpbugrpyvis6"
           config={{
-            loginMethods: ['farcaster'],
             externalWallets: { 
               coinbaseWallet: { 
                 connectionOptions: 'smartWalletOnly', 
@@ -36,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               theme: 'light',
               accentColor: '#00FFFFF',
               logo: '',
+              walletList: ['coinbase_wallet'], 
             },
             embeddedWallets: {
               createOnLogin: 'users-without-wallets',
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         >
           <MainComponent>{children}</MainComponent>
-          <Toaster />
+          <Toaster /> 
         </PrivyProvider>
       </body>
     </html>

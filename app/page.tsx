@@ -222,9 +222,14 @@ export default function Home() {
       if (user?.id) {
         formData.append('userId', user.id);
       }
-  
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_ROUTE}/video`, {
         method: 'POST',
+        headers: {
+          'Origin': 'https://www.guarpcast.com',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content-Type',
+        },
         body: formData,
       });
   
@@ -448,8 +453,6 @@ export default function Home() {
           </motion.p>
         )}
       </main>
-
-
       <BottomNav 
         onRecordClick={startRecording}
         isRecording={isRecording}

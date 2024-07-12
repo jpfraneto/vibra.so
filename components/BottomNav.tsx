@@ -3,6 +3,7 @@
 import React from 'react';
 import { Home, User, Video, Wallet, MessageCircle, StopCircle } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
+import Link from 'next/link';
 
 interface BottomNavProps {
   onRecordClick: () => void;
@@ -11,7 +12,7 @@ interface BottomNavProps {
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isRecording, stopRecording }) => {
-  const { login, authenticated } = usePrivy() 
+  const { login, authenticated, user } = usePrivy() 
   const handleNavClick = (route: string) => {
     if (route === 'record') {
       if(authenticated) {
@@ -23,10 +24,13 @@ const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isRecording, stopR
       } else {
         login()
       }
-
-    } else {
-      return
-      alert(`Open ${route} route`);
+    } else if (route === 'wallet'){
+      console.log("the user is: ", user)
+      if(user?.wallet!){
+        const userWalletAddress = user?.wallet?.address
+        navigator.clipboard.writeText(userWalletAddress || "")
+        alert(`your wallet address was copied ${userWalletAddress}`)
+      }
     }
   };
 
@@ -53,15 +57,15 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
-  <button 
-    className="flex flex-col items-center group"
+  <span 
+    className="flex flex-col items-center group hover:cursor-pointer"
     onClick={onClick}
   >
     <div className="group-hover:text-[#FF0000] transition-colors duration-200">
       {icon}
     </div>
     <span className="text-xs group-hover:text-[#FF0000] transition-colors duration-200">{label}</span>
-  </button>
+  </span>
 );
 
 interface RecordButtonProps {
