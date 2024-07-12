@@ -97,7 +97,7 @@ export default function Home() {
   
     const startRecording = async () => {
       try {
-        console.log("iN HERE")
+        console.log()
         setError("");
         setUploading(false);
         if (!streamRef.current) {
