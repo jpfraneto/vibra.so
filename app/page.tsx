@@ -105,14 +105,21 @@ export default function Home() {
         
         if (!streamRef.current) throw new Error('Failed to access media devices');
     
-        const options = { mimeType: 'video/webm' };
+        let options: MediaRecorderOptions = {};
+        if (MediaRecorder.isTypeSupported('video/mp4')) {
+          options = { mimeType: 'video/mp4' };
+        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+          options = { mimeType: 'video/webm;codecs=h264' };
+        } else if (MediaRecorder.isTypeSupported('video/webm')) {
+          options = { mimeType: 'video/webm' };
+        }
     
         mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
     
         const chunks: Blob[] = [];
         mediaRecorderRef.current.ondataavailable = (event) => chunks.push(event.data);
         mediaRecorderRef.current.onstop = () => {
-          const blob = new Blob(chunks, { type: 'video/webm' });
+          const blob = new Blob(chunks, { type: options.mimeType || 'video/webm' });
           setRecordedVideo(URL.createObjectURL(blob));
         };
     
@@ -163,12 +170,15 @@ export default function Home() {
       if (recordedVideo) {
         const a = document.createElement('a');
         a.href = recordedVideo;
-        a.download = 'vibra_recording.webm';
+        // Determine the file extension based on the MIME type
+        const fileExtension = mediaRecorderRef.current?.mimeType.includes('mp4') ? 'mp4' : 'webm';
+        a.download = `vibra_recording.${fileExtension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       }
     };
+
 
     const resetRecording = () => {
       setRecordedVideo(null);
