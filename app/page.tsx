@@ -14,85 +14,85 @@ const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 const MAX_RECORDING_TIME = 20; // seconds
 
 export default function Home() {
-    const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
-    const [isRecording, setIsRecording] = useState(false);
-    const [recordingProgress, setRecordingProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
-    const [hasMediaAccess, setHasMediaAccess] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
-    const [postDownloadState, setPostDownloadState] = useState(false);
-    const [isVibrating, setIsVibrating] = useState(false);
-    const [intensity, setIntensity] = useState(1);
+  const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMediaAccess, setHasMediaAccess] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
+  const [postDownloadState, setPostDownloadState] = useState(false);
+  const [isVibrating, setIsVibrating] = useState(false);
+  const [intensity, setIntensity] = useState(1);
 
-    const { authenticated, user } = usePrivy();
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const streamRef = useRef<MediaStream | null>(null);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const recordedVideoRef = useRef<HTMLVideoElement | null>(null);
+  const { authenticated, user } = usePrivy();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const recordedVideoRef = useRef<HTMLVideoElement | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
       if (error) {
-        toast.error(error);
+          toast.error(error);
       }
-    }, [error]);
-  
-    useEffect(() => {
+  }, [error]);
+
+  useEffect(() => {
       const checkIfMobile = () => {
-        setIsMobile(window.innerWidth <= 768);
+          setIsMobile(window.innerWidth <= 768);
       };
-  
+
       checkIfMobile();
       window.addEventListener('resize', checkIfMobile);
-  
-      return () => {
-        window.removeEventListener('resize', checkIfMobile);
-        stopMediaTracks();
-      };
-    }, []);
-  
-    useEffect(() => {
-      if (authenticated) {
-        checkMediaAccess();
-      }
-    }, [authenticated, cameraFacingMode]);
 
-    useEffect(() => {
+      return () => {
+          window.removeEventListener('resize', checkIfMobile);
+          stopMediaTracks();
+      };
+  }, []);
+
+  useEffect(() => {
+      if (authenticated) {
+          checkMediaAccess();
+      }
+  }, [authenticated, cameraFacingMode]);
+
+  useEffect(() => {
       if (recordedVideoRef.current) {
-        recordedVideoRef.current.onended = () => {
-          recordedVideoRef.current?.play();
-        };
+          recordedVideoRef.current.onended = () => {
+              recordedVideoRef.current?.play();
+          };
       }
-    }, [recordedVideo]);
-  
-    const stopMediaTracks = () => {
+  }, [recordedVideo]);
+
+  const stopMediaTracks = () => {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current.getTracks().forEach(track => track.stop());
       }
-    };
-  
-    const checkMediaAccess = async () => {
+  };
+
+  const checkMediaAccess = async () => {
       try {
-        const constraints = { 
-          video: isMobile ? { facingMode: cameraFacingMode } : true,
-          audio: true 
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        setHasMediaAccess(true);
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.muted = true;
-          videoRef.current.play().catch(console.error);
-        }
+          const constraints = { 
+              video: isMobile ? { facingMode: cameraFacingMode } : true,
+              audio: true 
+          };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          setHasMediaAccess(true);
+          streamRef.current = stream;
+          if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+              videoRef.current.muted = true;
+              await videoRef.current.play();
+          }
       } catch (error) {
-        console.error('Error accessing media devices:', error);
-        setHasMediaAccess(false);
-        setError('Failed to access camera and microphone. Please check your permissions.');
+          console.error('Error accessing media devices:', error);
+          setHasMediaAccess(false);
+          setError('Failed to access camera and microphone. Please check your permissions.');
       }
-    };
+  };
   
     const switchCamera = async () => {
       setCameraFacingMode(prev => prev === 'user' ? 'environment' : 'user');
@@ -218,59 +218,59 @@ export default function Home() {
           </nav>
         </header>
         <main className="container mx-auto px-3 mt-4">
-          <div className="flex flex-col items-center">
-            <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
-              {!hasMediaAccess && !recordedVideo && !postDownloadState && (
-                <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-                  <h2 className="text-2xl font-black mb-4">welcome to vibra</h2>
-                  <p className="text-cyan-500 text-lg font-bold">SHARE WHO YOU ARE</p>
-                  <p className="text-purple-500 text-lg font-bold">CONNECT WITH OTHERS</p>
-                  <p className="text-yellow-500 text-xl font-black mt-2">stream. be yourself.</p>
-                </div>
-              )}
-              {hasMediaAccess && !recordedVideo && !postDownloadState && (
-                <>
-                  <video 
-                    ref={videoRef} 
-                    className="w-full h-full object-cover"
-                    autoPlay 
-                    playsInline 
-                    muted={isMuted}
-                  />
-                  <div className="absolute top-2 right-2 flex space-x-2">
-                    <button
-                      onClick={toggleMute}
-                      className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
-                    >
-                      {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                    </button>
-                    <button
-                      onClick={switchCamera}
-                      className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
-                    >
-                      <SwitchCamera size={20} />
-                    </button>
-                  </div>
-                </>
-              )}
-              {recordedVideo && !postDownloadState && (
-                <video 
-                  ref={recordedVideoRef}
-                  className="w-full h-full object-cover"
-                  src={recordedVideo}
-                  autoPlay
-                  loop
-                  playsInline
-                />
-              )}
-              {postDownloadState && (
-                <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-                  <p className="text-xl font-bold mb-4">soon, that video will be a cast</p>
-                  <p className="text-cyan-500 text-lg font-bold">you get the point</p>
-                  <p className="text-purple-500 text-lg font-bold">stay tuned</p>
-                  <a href="https://warpcast.com/~/channel/vibra" target="_blank" rel="noopener noreferrer" className="text-yellow-500 text-xl font-black mt-2 hover:underline">/vibra</a>
-                </div>
-              )}
+                <div className="flex flex-col items-center">
+                    <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
+                        {!hasMediaAccess && !recordedVideo && !postDownloadState && (
+                            <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                                <h2 className="text-2xl font-black mb-4">welcome to vibra</h2>
+                                <p className="text-cyan-500 text-lg font-bold">SHARE WHO YOU ARE</p>
+                                <p className="text-purple-500 text-lg font-bold">CONNECT WITH OTHERS</p>
+                                <p className="text-yellow-500 text-xl font-black mt-2">stream. be yourself.</p>
+                            </div>
+                        )}
+                        {hasMediaAccess && (
+                            <>
+                                <video 
+                                    ref={videoRef} 
+                                    className="w-full h-full object-cover"
+                                    autoPlay 
+                                    playsInline 
+                                    muted={isMuted}
+                                />
+                                <div className="absolute top-2 right-2 flex space-x-2">
+                                    <button
+                                        onClick={toggleMute}
+                                        className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                                    >
+                                        {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                                    </button>
+                                    <button
+                                        onClick={switchCamera}
+                                        className="p-2 bg-white bg-opacity-50 rounded-full hover:bg-opacity-75 transition duration-300"
+                                    >
+                                        <SwitchCamera size={20} />
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                        {recordedVideo && !postDownloadState && (
+                            <video 
+                                ref={recordedVideoRef}
+                                className="w-full h-full object-cover"
+                                src={recordedVideo}
+                                autoPlay
+                                loop
+                                playsInline
+                            />
+                        )}
+                        {postDownloadState && (
+                            <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                                <p className="text-xl font-bold mb-4">soon, that video will be a cast</p>
+                                <p className="text-cyan-500 text-lg font-bold">you get the point</p>
+                                <p className="text-purple-500 text-lg font-bold">stay tuned</p>
+                                <a href="https://warpcast.com/~/channel/vibra" target="_blank" rel="noopener noreferrer" className="text-yellow-500 text-xl font-black mt-2 hover:underline">/vibra</a>
+                            </div>
+                        )}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                 <svg className="w-20 h-20">
                   <circle

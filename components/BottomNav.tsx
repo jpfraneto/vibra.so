@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, User, Wallet, MessageCircle, Vibrate, StopCircle, Download, Repeat } from 'lucide-react';
+import { Home, User, Wallet, MessageCircle, Vibrate, StopCircle, Download, Repeat, Camera, Play } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 
 interface BottomNavProps {
@@ -89,7 +89,7 @@ const RecordButton: React.FC<RecordButtonProps> = ({ isVibrating, isRecording, h
 
   if (isVibrating) {
     buttonClass += "bg-purple-600 animate-pulse";
-    Icon = Vibrate;
+    Icon = Camera;
   } else if (isRecording) {
     buttonClass += "bg-red-600 animate-pulse";
     Icon = StopCircle;
@@ -98,7 +98,7 @@ const RecordButton: React.FC<RecordButtonProps> = ({ isVibrating, isRecording, h
     Icon = Download;
   } else {
     buttonClass += "bg-blue-500 hover:bg-[#FF0000]";
-    Icon = Vibrate;
+    Icon = Play;
   }
 
   buttonClass += " transition-colors duration-200";

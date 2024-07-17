@@ -37,7 +37,7 @@ const MainComponent = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-screen bg-black flex items-center justify-center">
       <VibrationEffect isVibrating={isVibrating} intensity={intensity}>
-        <div className="w-full flex-grow flex max-w-[480] h-screen max-h-[812px] bg-white overflow-hidden relative shadow-lg rounded-lg">
+        <div className="w-full flex-grow flex max-w-[420] h-screen max-h-[812px] bg-white overflow-hidden relative shadow-lg rounded-lg">
           <main className="grow overflow-y-auto relative w-full">
             {children}
           </main>
