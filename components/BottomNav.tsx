@@ -1,6 +1,8 @@
 import React from 'react';
 import { Home, User, Wallet, MessageCircle, Vibrate, StopCircle, Download, Repeat } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
+import { motion } from 'framer-motion';
+
 
 interface BottomNavProps {
   onRecordClick: () => void;
@@ -40,7 +42,13 @@ const BottomNav: React.FC<BottomNavProps> = ({
   };
 
   return (
-    <nav className="z-3 mx-auto w-full rounded-full left-0 right-0 bg-black text-white">
+    <motion.nav 
+      className="rounded-full"
+      animate={{
+        backgroundColor: isRecording ? 'rgba(0, 0, 0, 0.5)' : 'black',
+      }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex justify-around items-center h-14 w-full mx-auto">
         <NavItem icon={<Home size={24} />} label="Home" onClick={() => handleNavClick('home')} />
         <NavItem icon={<User size={24} />} label="Profile" onClick={() => handleNavClick('profile')} />
@@ -54,7 +62,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
         <NavItem icon={<Wallet size={24} />} label="Wallet" onClick={() => handleNavClick('wallet')} />
         <NavItem icon={<MessageCircle size={24} />} label="Messages" onClick={() => handleNavClick('messages')} />
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
