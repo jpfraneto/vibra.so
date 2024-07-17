@@ -24,7 +24,6 @@ export default function Home() {
     const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
     const [postDownloadState, setPostDownloadState] = useState(false);
     const [isVibrating, setIsVibrating] = useState(false);
-    const [isFullScreen, setIsFullScreen] = useState(false);
     const [intensity, setIntensity] = useState(1);
 
     const { authenticated, user } = usePrivy();
@@ -126,13 +125,11 @@ export default function Home() {
         mediaRecorderRef.current.onstop = () => {
           const blob = new Blob(chunks, { type: options.mimeType || 'video/webm' });
           setRecordedVideo(URL.createObjectURL(blob));
-          setIsFullScreen(false);
         };
     
         mediaRecorderRef.current.start();
         setIsRecording(true);
         setRecordingProgress(0);
-        setIsFullScreen(true);
     
         let timeLeft = MAX_RECORDING_TIME;
         timerRef.current = setInterval(() => {
@@ -197,13 +194,15 @@ export default function Home() {
       setIsVibrating(true);
       setIntensity(prev => Math.min(prev + 1, 5));
   
-      setIsVibrating(false);
-      setIntensity(1);
-      startRecording();
+      setTimeout(() => {
+        setIsVibrating(false);
+        setIntensity(1);
+        startRecording();
+      }, 10);
     };
 
     const phoneClasses = isMobile
-      ? "w-[95vw] h-[80vh] mx-auto"
+      ? "w-[80vw] h-[70vh] mx-auto"
       : "w-[350px] h-[640px] mx-auto";
 
     const circleCircumference = 2 * Math.PI * 30;
@@ -218,19 +217,9 @@ export default function Home() {
             <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+%2Fvibra%0A%0Ai+want+early+access+%40jpfraneto%0A%0Ahttps%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding" className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
           </nav>
         </header>
-        <main className="mx-auto px-3 mt-4">
+        <main className="container mx-auto px-3 mt-4">
           <div className="flex flex-col items-center">
-            <motion.div
-              className={`relative ${isFullScreen ? 'fixed inset-0 z-50' : phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}
-              animate={{
-                width: isFullScreen ? '100vw' : '',
-                height: isFullScreen ? '100vh' : '',
-                borderRadius: isFullScreen ? '0' : '',
-                border: isFullScreen ? 'none' : '',
-                shadow: isFullScreen ? 'none' : '',
-              }}
-              transition={{ duration: 0.5 }}
-            >
+            <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
               {!hasMediaAccess && !recordedVideo && !postDownloadState && (
                 <div className="flex flex-col items-center justify-center h-full p-4 text-center">
                   <h2 className="text-2xl font-black mb-4">welcome to vibra</h2>
@@ -282,22 +271,7 @@ export default function Home() {
                   <a href="https://warpcast.com/~/channel/vibra" target="_blank" rel="noopener noreferrer" className="text-yellow-500 text-xl font-black mt-2 hover:underline">/vibra</a>
                 </div>
               )}
-              <div className="w-5/6 mx-auto absolute fixed bottom-4 left-0 right-0 shadow-lg rounded-lg">
-                <BottomNav
-                  onRecordClick={handleVibrateClick}
-                  isVibrating={isVibrating}
-                  stopRecording={stopRecording}
-                  isRecording={isRecording}
-                  hasRecordedVideo={!!recordedVideo}
-                  onDownloadClick={downloadVideo}
-                  onResetClick={resetRecording}
-                />
-              </div>
-              <motion.div 
-                className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
-                animate={{ opacity: isRecording ? 1 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                 <svg className="w-20 h-20">
                   <circle
                     cx="40"
@@ -311,75 +285,75 @@ export default function Home() {
                     transform="rotate(-90 40 40)"
                   />
                 </svg>
-              </motion.div>
+              </div>
               {isRecording && (
-                <motion.div 
-                  className="absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-bold"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                >
+                <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-bold animate-pulse">
                   Recording...
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+              <div className="w-5/6 mx-auto absolute fixed bottom-4 left-0 right-0 shadow-lg rounded-lg">
+                <BottomNav
+                  onRecordClick={handleVibrateClick}
+                  isVibrating={isVibrating}
+                  stopRecording={stopRecording}
+                  isRecording={isRecording}
+                  hasRecordedVideo={!!recordedVideo}
+                  onDownloadClick={downloadVideo}
+                  onResetClick={resetRecording}
+                />
             </div>
-            {!isFullScreen && (
-             <div className="mt-8 w-full px-4 max-w-2xl">
-             <div className="bg-white p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
-               <p className="text-xl mb-6 text-center font-bold">
-                 vibra is a video-based Farcaster client that brings a fresh perspective to being social onchain.
-               </p>
- 
-               <div className="flex justify-center space-x-8 mb-8">
-                 <div className="flex flex-col items-center">
-                   <Video className="text-purple-600 mb-2" size={36} />
-                   <span className="text-lg font-bold">Stream</span>
-                 </div>
-                 <div className="flex flex-col items-center">
-                   <Users className="text-cyan-500 mb-2" size={36} />
-                   <span className="text-lg font-bold">Connect</span>
-                 </div>
-                 <div className="flex flex-col items-center">
-                   <Camera className="text-yellow-500 mb-2" size={36} />
-                   <span className="text-lg font-bold text-center">Be Yourself</span>
-                 </div>
-               </div>
-             </div>
- 
-             <div className="bg-cyan-300 p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
-               <h3 className="text-3xl font-black mb-4">Farcaster</h3>
-               <p className="text-lg mb-4">
-                 Vibra&apos;s identity is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.
-               </p>
-               <div className="flex justify-around">
-                 <div className="flex flex-col items-center">
-                   <Zap className="text-purple-600 mb-2" size={32} />
-                   <span className="text-base font-bold">Fast & Efficient</span>
-                 </div>
-                 <div className="flex flex-col items-center">
-                   <Globe className="text-purple-600 mb-2" size={32} />
-                   <span className="text-base font-bold">Farcaster Network</span>
-                 </div>
-                 <div className="flex flex-col items-center">
-                   <Gift className="text-purple-600 mb-2" size={32} />
-                   <span className="text-base font-bold">Community Driven</span>
-                 </div>
-               </div>
-             </div>
-           </div>
-            )}
+            </div>
           
-          
+          <div className="mt-8 w-full px-4 max-w-2xl">
+            <div className="bg-white p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
+              <p className="text-xl mb-6 text-center font-bold">
+                vibra is a video-based Farcaster client that brings a fresh perspective to being social onchain.
+              </p>
+
+              <div className="flex justify-center space-x-8 mb-8">
+                <div className="flex flex-col items-center">
+                  <Video className="text-purple-600 mb-2" size={36} />
+                  <span className="text-lg font-bold">Stream</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Users className="text-cyan-500 mb-2" size={36} />
+                  <span className="text-lg font-bold">Connect</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Camera className="text-yellow-500 mb-2" size={36} />
+                  <span className="text-lg font-bold text-center">Be Yourself</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-cyan-300 p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
+              <h3 className="text-3xl font-black mb-4">Farcaster</h3>
+              <p className="text-lg mb-4">
+                Vibra&apos;s identity is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.
+              </p>
+              <div className="flex justify-around">
+                <div className="flex flex-col items-center">
+                  <Zap className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Fast & Efficient</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Globe className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Farcaster Network</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Gift className="text-purple-600 mb-2" size={32} />
+                  <span className="text-base font-bold">Community Driven</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
-
-      {!isFullScreen && (
-          <footer className="bg-purple-600 text-white text-center p-4 mt-8 pb-20 border-t-4 border-black">
-            <p className="text-lg font-bold">&copy; 2024 Vibra. All rights reserved.</p>
-            <p className="text-base">Powered by Farcaster & Moxie</p>
-          </footer>
-        )}
+      <footer className="bg-purple-600 text-white text-center p-4 mt-8 pb-20 border-t-4 border-black">
+        <p className="text-lg font-bold">&copy; 2024 Vibra. All rights reserved.</p>
+        <p className="text-base">Powered by Farcaster & Moxie</p>
+      </footer>
     </div>
   );
 }
