@@ -41,14 +41,6 @@ const MainComponent = ({ children }: { children: React.ReactNode }) => {
           <main className="grow overflow-y-auto relative">
             {children}
           </main>
-          <div className='w-full absolute bottom-0'>
-            <BottomNav
-              onRecordClick={() => {}}
-              isVibrating={isVibrating}
-              stopRecording={() => {}}
-              onVibrateClick={handleVibrateClick}
-            />
-          </div>
         </div>
       </VibrationEffect>
     </div>

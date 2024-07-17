@@ -7,6 +7,7 @@ import { Lilita_One } from 'next/font/google';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Mic, MicOff, Repeat, SwitchCamera, StopCircle, Video, Users, Zap, Globe, Gift, Download } from 'lucide-react';
+import BottomNav from '@/components/BottomNav';
 
 const lilitaOne = Lilita_One({ subsets: ['latin'], weight: '400' });
 
@@ -22,14 +23,16 @@ export default function Home() {
     const [isMobile, setIsMobile] = useState(false);
     const [cameraFacingMode, setCameraFacingMode] = useState<'user' | 'environment'>('user');
     const [postDownloadState, setPostDownloadState] = useState(false);
-  
+    const [isVibrating, setIsVibrating] = useState(false);
+    const [intensity, setIntensity] = useState(1);
+
     const { authenticated, user } = usePrivy();
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const recordedVideoRef = useRef<HTMLVideoElement | null>(null);
-  
+
     useEffect(() => {
       if (error) {
         toast.error(error);
@@ -187,6 +190,17 @@ export default function Home() {
       checkMediaAccess();
     };
 
+    const handleVibrateClick = () => {
+      setIsVibrating(true);
+      setIntensity(prev => Math.min(prev + 1, 5));
+  
+      setTimeout(() => {
+        setIsVibrating(false);
+        setIntensity(1);
+        startRecording();
+      }, 3000);
+    };
+
     const phoneClasses = isMobile
       ? "w-[80vw] h-[70vh] mx-auto"
       : "w-[350px] h-[640px] mx-auto";
@@ -196,14 +210,14 @@ export default function Home() {
 
     return (
       <div className="min-h-screen bg-yellow-300 font-mono text-black">
-        <header className="bg-purple-600 p-4 flex justify-between items-center border-b-4 border-black">
+        <header className="bg-purple-600 px-4 flex justify-between items-center border-b-4 border-black">
           <h1 className={`text-4xl font-black text-white tracking-tighter ${lilitaOne.className}`}>vibra</h1>
           <nav>
             <a target='_blank' href="https://warpcast.com/~/channel/vibra" className="text-white font-bold mx-2 hover:underline text-lg">/vibra</a>
             <a target='_blank' href="https://warpcast.com/~/compose?text=que+venga+la+buena+%2Fvibra%0A%0Ai+want+early+access+%40jpfraneto%0A%0Ahttps%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding&embeds%5B%5D=https%3A%2F%2Fapi.anky.bot%2Fvibra%2Flanding" className="text-white font-bold mx-2 hover:underline text-lg">/download</a>
           </nav>
         </header>
-        <main className="container mx-auto mt-4">
+        <main className="container mx-auto px-3 mt-4">
           <div className="flex flex-col items-center">
             <div className={`relative ${phoneClasses} bg-purple-200 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden`}>
               {!hasMediaAccess && !recordedVideo && !postDownloadState && (
@@ -271,42 +285,27 @@ export default function Home() {
                     transform="rotate(-90 40 40)"
                   />
                 </svg>
-                {recordedVideo && !postDownloadState ? (
-                  <button
-                    onClick={downloadVideo}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-500 rounded-full font-bold flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]"
-                  >
-                    <Download size={24} className="text-white" />
-                  </button>
-                ) : postDownloadState ? (
-                  <button
-                    onClick={resetRecording}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-green-500 rounded-full font-bold flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]"
-                  >
-                    <Repeat size={24} className="text-white" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 ${isRecording ? 'bg-red-600 animate-pulse' : 'bg-red-500'} rounded-full font-bold active:background-yellow-500 flex items-center justify-center transition-colors duration-300 shadow-[4px_4px_0_0_rgba(0,0,0,1)]`}
-                  >
-                    {isRecording ? (
-                      <StopCircle size={24} className="text-white" />
-                    ) : (
-                      <Camera size={24} className="text-white" />
-                    )}
-                  </button>
-                )}
               </div>
               {isRecording && (
                 <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-bold animate-pulse">
                   Recording...
                 </div>
               )}
+              <div className="w-5/6 mx-auto absolute fixed bottom-4 left-0 right-0 shadow-lg rounded-lg">
+                <BottomNav
+                  onRecordClick={handleVibrateClick}
+                  isVibrating={isVibrating}
+                  stopRecording={stopRecording}
+                  isRecording={isRecording}
+                  hasRecordedVideo={!!recordedVideo}
+                  onDownloadClick={downloadVideo}
+                  onResetClick={resetRecording}
+                />
+            </div>
             </div>
           
-          <div className="mt-8 w-full max-w-2xl">
-            <div className="bg-white p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
+          <div className="mt-8 w-full px-4 max-w-2xl">
+            <div className="bg-white p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black mb-8">
               <p className="text-xl mb-6 text-center font-bold">
                 vibra is a video-based Farcaster client that brings a fresh perspective to being social onchain.
               </p>
@@ -327,7 +326,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-cyan-300 p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
+            <div className="bg-cyan-300 p-6 rounded-md shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black">
               <h3 className="text-3xl font-black mb-4">Farcaster</h3>
               <p className="text-lg mb-4">
                 Vibra&apos;s identity is powered by the Farcaster protocol, bringing you a decentralized and community-driven social experience.

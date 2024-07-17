@@ -21,6 +21,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8B5CF6" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta property="fc:frame" content="vNext" />
+        <meta property="fc:frame:image" content="https://github.com/jpfraneto/images/blob/main/vibra.png?raw=true" />
       </head>
       <body>
         <PrivyProvider

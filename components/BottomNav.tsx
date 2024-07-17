@@ -1,15 +1,26 @@
 import React from 'react';
-import { Home, User, Wallet, MessageCircle, Vibrate } from 'lucide-react';
+import { Home, User, Wallet, MessageCircle, Vibrate, StopCircle, Download, Repeat } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 
 interface BottomNavProps {
   onRecordClick: () => void;
   isVibrating: boolean;
   stopRecording: () => void;
-  onVibrateClick: () => void;
+  isRecording: boolean;
+  hasRecordedVideo: boolean;
+  onDownloadClick: () => void;
+  onResetClick: () => void;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isVibrating, stopRecording, onVibrateClick }) => {
+const BottomNav: React.FC<BottomNavProps> = ({
+  onRecordClick,
+  isVibrating,
+  stopRecording,
+  isRecording,
+  hasRecordedVideo,
+  onDownloadClick,
+  onResetClick
+}) => {
   const { login, authenticated, user } = usePrivy();
 
   const handleNavClick = (route: string) => {
@@ -19,25 +30,26 @@ const BottomNav: React.FC<BottomNavProps> = ({ onRecordClick, isVibrating, stopR
         navigator.clipboard.writeText(userWalletAddress || "");
         alert(`Your wallet address was copied ${userWalletAddress}`);
       }
-    } else if (route === 'vibrate') {
-      onVibrateClick();
     } else if (route === 'home') {
-      alert("")
+      alert("Home clicked");
     } else if (route === 'profile') {
-      alert("who are you?")
-    } else if (route === 'wallet') {
-      alert("swap $water (solana) for $degen (base). the future is multichain. and the future is now.");
+      alert("Who are you?");
+    } else if (route === 'messages') {
+      alert("Messages clicked");
     }
   };
 
   return (
-    <nav className="bottom-0 z-3 w-full left-0 right-0 bg-black text-white">
-      <div className="flex justify-around items-center h-16 w-full mx-auto">
+    <nav className="z-3 mx-auto w-full rounded-full left-0 right-0 bg-black text-white">
+      <div className="flex justify-around items-center h-14 w-full mx-auto">
         <NavItem icon={<Home size={24} />} label="Home" onClick={() => handleNavClick('home')} />
         <NavItem icon={<User size={24} />} label="Profile" onClick={() => handleNavClick('profile')} />
         <RecordButton 
-          isVibrating={isVibrating} 
-          onClick={() => handleNavClick('vibrate')}
+          isVibrating={isVibrating}
+          isRecording={isRecording}
+          hasRecordedVideo={hasRecordedVideo}
+          onClick={isRecording ? stopRecording : (hasRecordedVideo ? onDownloadClick : onRecordClick)}
+          onResetClick={onResetClick}
         />
         <NavItem icon={<Wallet size={24} />} label="Wallet" onClick={() => handleNavClick('wallet')} />
         <NavItem icon={<MessageCircle size={24} />} label="Messages" onClick={() => handleNavClick('messages')} />
@@ -60,24 +72,55 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
     <div className="group-hover:text-[#FF0000] transition-colors duration-200">
       {icon}
     </div>
-    <span className="text-xs group-hover:text-[#FF0000] transition-colors duration-200">{label}</span>
   </span>
 );
 
 interface RecordButtonProps {
   isVibrating: boolean;
+  isRecording: boolean;
+  hasRecordedVideo: boolean;
   onClick: () => void;
+  onResetClick: () => void;
 }
 
-const RecordButton: React.FC<RecordButtonProps> = ({ isVibrating, onClick }) => (
-  <button 
-    className={`flex flex-col items-center justify-center -mt-6 w-16 h-16 rounded-full ${
-      isVibrating ? 'bg-purple-600' : 'bg-blue-500'
-    } hover:bg-[#FF0000] transition-colors duration-200`}
-    onClick={onClick}
-  >
-    <Vibrate size={32}/>
-  </button>
-);
+const RecordButton: React.FC<RecordButtonProps> = ({ isVibrating, isRecording, hasRecordedVideo, onClick, onResetClick }) => {
+  let buttonClass = "flex flex-col items-center justify-center w-16 h-16 rounded-full ";
+  let Icon;
+
+  if (isVibrating) {
+    buttonClass += "bg-purple-600 animate-pulse";
+    Icon = Vibrate;
+  } else if (isRecording) {
+    buttonClass += "bg-red-600 animate-pulse";
+    Icon = StopCircle;
+  } else if (hasRecordedVideo) {
+    buttonClass += "bg-blue-500";
+    Icon = Download;
+  } else {
+    buttonClass += "bg-blue-500 hover:bg-[#FF0000]";
+    Icon = Vibrate;
+  }
+
+  buttonClass += " transition-colors duration-200";
+
+  return (
+    <div className="relative">
+      <button 
+        className={buttonClass}
+        onClick={onClick}
+      >
+        <Icon size={32} color="white" />
+      </button>
+      {hasRecordedVideo && (
+        <button
+          className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1"
+          onClick={onResetClick}
+        >
+          <Repeat size={16} color="white" />
+        </button>
+      )}
+    </div>
+  );
+};
 
 export default BottomNav;
